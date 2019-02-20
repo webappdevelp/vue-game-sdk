@@ -14,7 +14,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
 @Component
-export default class Loading extends Vue {
+export default class HyLoading extends Vue {
   @Prop({
     type: Boolean,
     default: false
@@ -42,15 +42,15 @@ export default class Loading extends Vue {
     left: 0;
     right: 0;
     margin: 0 auto;
-    width: 60px;
-    height: 60px;
+    width: 30px;
+    height: 30px;
     transform: translate3d(0, -50%, 0) rotate(10deg);
     animation: rotation 1s infinite;
   }
   &-shape {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
   }
   &-shape1 {
@@ -90,7 +90,7 @@ export default class Loading extends Vue {
     transform: translate(0, 0);
   }
   to {
-    transform: translate(40px, 40px);
+    transform: translate(25px, 25px);
   }
 }
 
@@ -99,7 +99,7 @@ export default class Loading extends Vue {
     transform: translate(0, 0);
   }
   to {
-    transform: translate(-40px, 40px);
+    transform: translate(-25px, 25px);
   }
 }
 
@@ -108,7 +108,7 @@ export default class Loading extends Vue {
     transform: translate(0, 0);
   }
   to {
-    transform: translate(40px, -40px);
+    transform: translate(25px, -25px);
   }
 }
 
@@ -117,7 +117,7 @@ export default class Loading extends Vue {
     transform: translate(0, 0);
   }
   to {
-    transform: translate(-40px, -40px);
+    transform: translate(-25px, -25px);
   }
 }
 </style>

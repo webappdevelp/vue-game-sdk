@@ -6,20 +6,42 @@
   </transition>
 </template>
 <script lang="ts">
+let timer: any = null;
 import { Vue, Component, Prop } from 'vue-property-decorator';
 @Component
-export default class Toast extends Vue {
+export default class HyToast extends Vue {
   @Prop({
     type: Boolean,
     default: false
   })
   private show!: boolean;
-
+  @Prop({
+    type: Number,
+    default: 2000
+  })
+  private time!: number;
   @Prop({
     type: String,
     default: ''
   })
   private msg!: string;
+
+  // methods
+  private hide() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    timer = setTimeout(() => {
+      this.$emit('update:show', false);
+    }, this.time);
+  }
+
+  private updated() {
+    if (this.show) {
+      this.hide();
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>
