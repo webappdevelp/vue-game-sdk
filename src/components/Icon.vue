@@ -106,5 +106,8 @@ export default class HyIcon extends Vue {
   &-switch__w {
     background-image: url('../assets/scenes/icons/switch-w.png');
   }
+  &-refresh__b {
+    background-image: url('../assets/scenes/icons/refresh-b.png')
+  }
 }
 </style>

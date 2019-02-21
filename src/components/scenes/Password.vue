@@ -1,10 +1,10 @@
 <template>
   <modal :show="show" animate="right">
-    <form ref="mobileLogin" class="hy-form" @submit="submit">
-      <h2 class="hy-form-header">
+    <form ref="mobilePsw" class="hy-form">
+      <div class="hy-form-header">
         <Icon name="back" @click="hide" />
-        手机号登录
-      </h2>
+        修改密码
+      </div>
       <div class="hy-form-body">
         <div class="hy-form-item" v-for="(obj, key) in form" :key="key" :class="obj.msg !== '' ? 'error' : ''">
           <hy-input
@@ -29,6 +29,56 @@
   </modal>
 </template>
 <script lang="ts">
+const defaultForm: any = {
+  mobile: {
+    icon: 'mobile',
+    type: 'number',
+    placeholder: '请输入手机号',
+    value: '',
+    msg: ''
+  },
+  code: {
+    icon: 'safety',
+    type: 'text',
+    placeholder: '请输入验证码',
+    value: '',
+    msg: ''
+  },
+  password: {
+    icon: 'lock',
+    type: 'password',
+    placeholder: '请输入密码',
+    showPsw: true,
+    value: '',
+    msg: ''
+  }
+};
+const defaultPForm: any = {
+  old_password: {
+    icon: 'lock',
+    type: 'password',
+    placeholder: '请输入原密码',
+    showPsw: true,
+    value: '',
+    msg: ''
+  },
+  password: {
+    icon: 'lock',
+    type: 'password',
+    placeholder: '请输入新密码',
+    showPsw: true,
+    value: '',
+    msg: ''
+  },
+  re_password: {
+    icon: 'lock',
+    type: 'password',
+    placeholder: '请再次输入新密码',
+    showPsw: true,
+    value: '',
+    msg: ''
+  }
+};
 let tempForm: any = {};
 import deepCopy from '@/utils/ts/deepCopy';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
@@ -46,31 +96,21 @@ import Btn from '../Btn.vue';
     Btn
   }
 })
-export default class HyScenesMobileLogin extends Vue {
+export default class HyPassword extends Vue {
   @Prop({
     type: Boolean,
     default: false
   })
   private show!: boolean;
+  @Prop({
+    type: Boolean,
+    default: false
+  })
+  private type!: boolean;
 
   private data() {
     return {
-      form: {
-        mobile: {
-          icon: 'mobile',
-          type: 'number',
-          placeholder: '请输入手机号',
-          value: '',
-          msg: ''
-        },
-        code: {
-          icon: 'safety',
-          type: 'text',
-          placeholder: '请输入验证码',
-          value: '',
-          msg: ''
-        }
-      }
+      form: this.type ? deepCopy(defaultForm) : deepCopy(defaultPForm)
     };
   }
 
@@ -90,7 +130,11 @@ export default class HyScenesMobileLogin extends Vue {
 
   // methods
   private hide() {
+    this.$data.form = this.type
+      ? deepCopy(defaultForm)
+      : deepCopy(defaultPForm);
     this.$emit('update:show', false);
+    this.$emit('cb');
   }
   private getCodeErrCb(msg: string) {
     if (msg) {
@@ -102,21 +146,12 @@ export default class HyScenesMobileLogin extends Vue {
       this.$data.form = form;
     }
   }
-  private submit(e: any) {
-    const { form } = this.$data;
-    tempForm = deepCopy({
-      ...tempForm,
-      form
-    });
-    console.log(this.$data.form);
-    e.preventDefault();
-  }
 }
 </script>
 <style lang="scss" scoped>
 .hy-form {
   position: relative;
-  padding: 0 24px 24px;
+  padding: 0 20px 20px;
   overflow: hidden;
   &-header {
     position: relative;

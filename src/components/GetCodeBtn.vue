@@ -16,6 +16,11 @@ export default class HyGetCodeBtn extends Vue {
     default: ''
   })
   private mobile!: string;
+  @Prop({
+    type: String,
+    default: 'register'
+  })
+  private action!: string;
 
   private data() {
     return {

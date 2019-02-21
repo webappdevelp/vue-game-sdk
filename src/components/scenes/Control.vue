@@ -1,11 +1,11 @@
 <template>
-  <div class="hy-control">
+  <div class="hy-control" @click="action">
     <badge v-if="msg !== ''" :msg="msg"></badge>
   </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
-import Badge from './Badge.vue';
+import Badge from '../Badge.vue';
 @Component({
   components: {
     Badge
@@ -18,6 +18,10 @@ export default class HyControl extends Vue {
   })
   private msg!: string;
 
+  // methods
+  private action() {
+    this.$emit('click');
+  }
 }
 </script>
 <style lang="scss" scoped>
@@ -30,7 +34,7 @@ export default class HyControl extends Vue {
   height: 40px;
   overflow: hidden;
   will-change: auto;
-  background: url('../assets/scenes/control.png') center no-repeat;
+  background: url('../../assets/scenes/control.png') center no-repeat;
   background-size: contain;
   transform: translate3d(-20px, 0, 0);
   .hy-badge {

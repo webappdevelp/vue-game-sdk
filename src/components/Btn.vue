@@ -36,6 +36,7 @@ export default class HyBtn extends Vue {
   flex: 1;
   height: 40px;
   line-height: 40px;
+  width: 100%;
   font-size: 14px;
   color: #fff;
   text-align: center;

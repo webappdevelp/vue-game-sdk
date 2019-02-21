@@ -1,27 +1,30 @@
 <template>
-  <modal :show="show" animate="fade">
-    <form ref="login" class="hy-form" @submit="submit">
-      <Icon name="close" @click="hide" />
-      <h2 class="hy-form-header">普通账号登录</h2>
-      <div class="hy-form-body">
-        <div class="hy-form-item" v-for="(obj, key) in form" :key="key">
-          <hy-input
-            :icon="obj.icon"
-            v-model="obj.value"
-            :name="key"
-            :type.sync="obj.type"
-            :placeholder="obj.placeholder"
-            :showPsw="obj.showPsw"
-          />
+  <div class="hy-login">
+    <modal :show="show" animate="fade">
+      <form ref="login" class="hy-form" @submit="submit">
+        <Icon name="close" @click="hide" />
+        <div class="hy-form-header">普通账号登录</div>
+        <div class="hy-form-body">
+          <div class="hy-form-item" v-for="(obj, key) in form" :key="key">
+            <hy-input
+              :icon="obj.icon"
+              v-model="obj.value"
+              :name="key"
+              :type.sync="obj.type"
+              :placeholder="obj.placeholder"
+              :showPsw="obj.showPsw"
+            />
+          </div>
+          <btn style="width: 100%" text="立即登录" type="submit" />
         </div>
-        <btn style="width: 100%" text="立即登录" type="submit" />
-      </div>
-      <div class="hy-form-footer">
-        <btn text="手机号登录" color="green" />
-        <btn text="一键注册" color="purple" />
-      </div>
-    </form>
-  </modal>
+        <div class="hy-form-footer">
+          <btn text="手机号登录" color="green" @click="mobileLogin"/>
+          <btn text="一键注册" color="purple" />
+        </div>
+      </form>
+    </modal>
+    <mobile :show.sync="showMobile" @cb="showLogin" />
+  </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
@@ -29,12 +32,14 @@ import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
 import HyInput from '../form/Input.vue';
 import Btn from '../Btn.vue';
+import Mobile from './Mobile.vue';
 @Component({
   components: {
     Modal,
     Icon,
     HyInput,
-    Btn
+    Btn,
+    Mobile
   }
 })
 export default class HyScenesLogin extends Vue {
@@ -46,7 +51,6 @@ export default class HyScenesLogin extends Vue {
 
   private data() {
     return {
-      pswType: 'password',
       form: {
         username: {
           icon: 'account',
@@ -63,13 +67,21 @@ export default class HyScenesLogin extends Vue {
           value: '',
           msg: ''
         }
-      }
+      },
+      showMobile: false
     };
   }
 
   // methods
   private hide() {
     this.$emit('update:show', false);
+  }
+  private mobileLogin() {
+    this.$data.showMobile = true;
+    this.hide();
+  }
+  private showLogin() {
+    this.$emit('update:show', true);
   }
   private submit(e: any) {
     console.log(this.$data.form);
@@ -80,7 +92,7 @@ export default class HyScenesLogin extends Vue {
 <style lang="scss" scoped>
 .hy-form {
   position: relative;
-  padding: 0 24px 24px;
+  padding: 0 20px 20px;
   overflow: hidden;
   &-header {
     position: relative;

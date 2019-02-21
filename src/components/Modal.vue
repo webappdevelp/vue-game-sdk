@@ -16,7 +16,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 export default class HyScenesModal extends Vue {
   @Prop({
     type: String,
-    default: ''
+    default: 'fade'
   })
   private animate!: string;
   @Prop({
