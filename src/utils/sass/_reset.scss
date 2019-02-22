@@ -6,6 +6,11 @@
   -webkit-user-select: none;
   outline: 0 none;
 }
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
 li {
   list-style: none;
 }

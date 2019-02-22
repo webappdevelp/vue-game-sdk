@@ -1,5 +1,5 @@
 <template>
-  <div class="hy-control" @click="action">
+  <div v-if="show" class="hy-control" @click="action">
     <badge v-if="msg !== ''" :msg="msg"></badge>
   </div>
 </template>
@@ -12,6 +12,11 @@ import Badge from '../Badge.vue';
   }
 })
 export default class HyControl extends Vue {
+  @Prop({
+    type: Boolean,
+    default: false
+  })
+  private show!: boolean;
   @Prop({
     type: String,
     default: ''
@@ -27,7 +32,7 @@ export default class HyControl extends Vue {
 <style lang="scss" scoped>
 .hy-control {
   position: absolute;
-  z-index: 100;
+  z-index: 10;
   top: 13%;
   left: 0;
   width: 40px;

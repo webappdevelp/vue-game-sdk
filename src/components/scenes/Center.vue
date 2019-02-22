@@ -1,10 +1,7 @@
 <template>
-  <div class="hy-center">
-    <transition name="fade">
-      <div v-if="show" class="hy-center-bg" @click="hide"></div>
-    </transition>
-    <transition name="left">
-      <div v-if="show" class="hy-center-box">
+  <hy-dialog :show="show" animate="left" z-index="30" @close="hide">
+    <template slot-scope="scope">
+      <div class="hy-center" :style="scope.scope">
         <center-header />
         <ul class="hy-center-current">
           <li>
@@ -28,11 +25,12 @@
           </a>
         </div>
       </div>
-    </transition>
-  </div>
+    </template>
+  </hy-dialog>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
+import HyDialog from '../Dialog.vue';
 import CenterHeader from './center/Header.vue';
 import Menus from './center/Menus.vue';
 import Gifts from './center/Gifts.vue';
@@ -40,6 +38,7 @@ import Infos from './center/Infos.vue';
 import Icon from '../Icon.vue';
 @Component({
   components: {
+    HyDialog,
     CenterHeader,
     Menus,
     Gifts,
@@ -71,30 +70,11 @@ export default class HyScenesCenter extends Vue {
 </script>
 <style lang="scss" scoped>
 .hy-center {
-  height: 0;
-  font-size: 0;
-  &-bg,
-  &-box {
-    position: fixed;
-    z-index: 110;
-  }
-  &-bg {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-  }
-  &-box {
-    z-index: 111;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 85%;
-    background: #fff;
-  }
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 85%;
+  background: #fff;
 }
 .hy-center-current {
   padding: 0 12px;
@@ -141,40 +121,6 @@ export default class HyScenesCenter extends Vue {
     word-break: break-all;
     writing-mode: vertical-lr;
     background: #f5dec6;
-  }
-}
-
-.fade-enter-active {
-  animation: fadeIn 0.3s;
-}
-.fade-leave-active {
-  animation: fadeIn 0.3s reverse;
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.left-enter-active {
-  animation: leftIn 0.3s;
-}
-.left-leave-active {
-  animation: leftIn 0.3s reverse;
-}
-@keyframes leftIn {
-  from {
-    opacity: 0;
-    visibility: hidden;
-    transform: translate3d(-120%, 0, 0);
-  }
-  to {
-    opacity: 1;
-    visibility: visible;
-    transform: translate3d(0, 0, 0);
   }
 }
 </style>

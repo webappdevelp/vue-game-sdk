@@ -1,5 +1,6 @@
 module.exports = {
   devServer: {
-    host: 'm.xy.com'
+    host: 'cq.zhihuigu168.com',
+    port: 8081
   }
 }

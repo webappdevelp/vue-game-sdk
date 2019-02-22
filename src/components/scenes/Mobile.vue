@@ -143,6 +143,20 @@ export default class HyScenesMobileLogin extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+.hy-modal {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 280px;
+  padding: 0;
+  background-color: #fff;
+  transform: translate3d(0, -50%, 0);
+  border-radius: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 .hy-form {
   position: relative;
   padding: 0 20px 20px;
@@ -202,4 +216,5 @@ export default class HyScenesMobileLogin extends Vue {
   line-height: 30px;
   max-width: 100px;
 }
+
 </style>

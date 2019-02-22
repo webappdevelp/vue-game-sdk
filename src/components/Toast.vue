@@ -11,11 +11,6 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 @Component
 export default class HyToast extends Vue {
   @Prop({
-    type: Boolean,
-    default: false
-  })
-  private show!: boolean;
-  @Prop({
     type: Number,
     default: 2000
   })
@@ -25,6 +20,11 @@ export default class HyToast extends Vue {
     default: ''
   })
   private msg!: string;
+  @Prop({
+    type: Boolean,
+    default: false
+  })
+  private show!: boolean;
 
   // methods
   private hide() {
