@@ -1,37 +1,45 @@
-import { u9Api, channel_id } from '../config';
+import { u9Api, channelId } from '../config';
 import { post } from '../utils/ts/fetch';
 
-// 设备初始化
-export function deviceInit(params: {
-  app: number;
-  app_id: number;
-  brand_desc: string;
-  imei: string;
-}) {
-  return post(`${u9Api}/u9/init`, {
+function sendPost(url: string, params: any = {}) {
+  return post(`${u9Api}${url}`, {
     datas: {
+      ChannelId: channelId,
       ...params
+    },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
   });
 }
 
+// 设备初始化
+export function deviceInit(params: {
+  app: string;
+  app_id: string;
+  brand_desc?: string;
+  imei: string;
+}) {
+  return sendPost('/u9/init', params);
+}
+
 // 登录
 export function login(params: {
-  ProductId?: number;
-  Token?: string;
-  ChannelUserId?: string;
-  ChannelUserName?: string;
+  device: number;
+  uid: number;
+  ProductId: string;
+  Token: string;
+  ChannelUserId: string;
+  ChannelUserName: string;
 }) {
-  return post(`${u9Api}/user/login`, {
-    datas: {
-      ChannelId: channel_id,
-      ...params
-    }
+  return sendPost('/login/loginRequest', {
+    ...params
   });
 }
 
 // 日志上报
 export function report(params: {
+  device: number;
   role_id?: number;
   role_level?: number;
   role_name?: string;
@@ -41,17 +49,14 @@ export function report(params: {
   party_name?: string;
   vip?: number;
 }) {
-  return post(`${u9Api}/user/roleReport`, {
-    datas: {
-      ...params
-    }
-  });
+  return sendPost('/user/roleReport', params);
 }
 
 // 支付
 export function pay(params: {
+  device: number;
   UserId: string;
-  ProductId: number;
+  ProductId: string;
   ProductOrderId: string;
   amount: number;
   CallbackUrl: string;
@@ -60,11 +65,8 @@ export function pay(params: {
   DeviceId: string;
   openid?: string;
 }) {
-  return post(`${u9Api}/payRequest/payRequest`, {
-    datas: {
-      ChannelId: channel_id,
-      IsSwitchPayChannel: 1,
-      ...params
-    }
-  })
+  return sendPost('/payRequest/payRequest', {
+    IsSwitchPayChannel: 1,
+    ...params
+  });
 }

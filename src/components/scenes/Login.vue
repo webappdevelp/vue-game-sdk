@@ -1,45 +1,49 @@
 <template>
-  <div class="hy-login">
-    <modal :show="show" animate="fade">
-      <form ref="login" class="hy-form" @submit="submit">
-        <Icon name="close" @click="hide" />
-        <div class="hy-form-header">普通账号登录</div>
-        <div class="hy-form-body">
-          <div class="hy-form-item" v-for="(obj, key) in form" :key="key">
-            <hy-input
-              :icon="obj.icon"
-              v-model="obj.value"
-              :name="key"
-              :type.sync="obj.type"
-              :placeholder="obj.placeholder"
-              :showPsw="obj.showPsw"
-            />
-          </div>
-          <btn style="width: 100%" text="立即登录" type="submit" />
+  <modal :show="show" animate="fade">
+    <form ref="login" class="hy-form" @submit="submit">
+      <Icon name="close" @click="hide"/>
+      <div class="hy-form-header">普通账号登录</div>
+      <div class="hy-form-body">
+        <div
+          class="hy-form-item"
+          v-for="(obj, key) in form"
+          :key="key"
+          :class="obj.msg !== '' ? 'error' : ''"
+        >
+          <hy-input
+            :icon="obj.icon"
+            v-model="obj.value"
+            :name="key"
+            :type.sync="obj.type"
+            :placeholder="obj.placeholder"
+            :showPsw="obj.showPsw"
+          />
+          <div v-if="obj.msg !== ''" class="hy-form-item--error">{{ obj.msg }}</div>
         </div>
-        <div class="hy-form-footer">
-          <btn text="手机号登录" color="green" @click="mobileLogin"/>
-          <btn text="一键注册" color="purple" />
-        </div>
-      </form>
-    </modal>
-    <mobile :show.sync="showMobile" @cb="showLogin" />
-  </div>
+        <btn style="width: 100%; margin-top: 10px;" text="立即登录" type="submit"/>
+      </div>
+      <div class="hy-form-footer">
+        <btn text="手机号登录" color="green" @click="btnAction('mobile')"/>
+        <btn text="一键注册" color="purple" @click="btnAction('fast')"/>
+      </div>
+    </form>
+  </modal>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+let tempForm: any = {};
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
 import HyInput from '../form/Input.vue';
 import Btn from '../Btn.vue';
-import Mobile from './Mobile.vue';
+import { validateForm } from '@/utils/ts/form';
+import deepCopy from '@/utils/ts/deepCopy';
 @Component({
   components: {
     Modal,
     Icon,
     HyInput,
-    Btn,
-    Mobile
+    Btn
   }
 })
 export default class HyScenesLogin extends Vue {
@@ -67,25 +71,46 @@ export default class HyScenesLogin extends Vue {
           value: '',
           msg: ''
         }
-      },
-      showMobile: false
+      }
     };
+  }
+
+  // watches
+  @Watch('form', { deep: true })
+  private changeForm(val: any, old: any) {
+    for (const key in val) {
+      if (val.hasOwnProperty(key) && !!tempForm[key] && val[key].value !== tempForm[key].value) {
+        val[key].msg = '';
+      }
+    }
   }
 
   // methods
   private hide() {
     this.$emit('update:show', false);
   }
-  private mobileLogin() {
-    this.$data.showMobile = true;
-    this.hide();
+  private btnAction(action: string) {
+    this.$emit('btn-action', action);
   }
-  private showLogin() {
-    this.$emit('update:show', true);
-  }
-  private submit(e: any) {
-    console.log(this.$data.form);
+  private submit(e: Event) {
     e.preventDefault();
+    const { form } = this.$data;
+    tempForm = deepCopy(form);
+    const rules = {
+      username: [{ required: true, msg: '请输入账号' }],
+      password: [{ required: true, msg: '请输入密码' }, { minLength: 6, msg: '密码错误' }]
+    };
+    this.$data.form = validateForm(form, rules);
+    const datas: any = {};
+    for (const key in form) {
+      if (form.hasOwnProperty(key)) {
+        if (!!form[key].msg) {
+          return;
+        }
+        datas[key] = form[key].value;
+      }
+    }
+    this.$emit('submit', { action: 'login', params: { ...datas } });
   }
 }
 </script>
@@ -119,21 +144,26 @@ export default class HyScenesLogin extends Vue {
   }
   .hy-icon-close {
     position: absolute;
+    z-index: 2;
     top: 8px;
     right: 8px;
   }
 }
 
 .hy-form-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   position: relative;
   margin-bottom: 25px;
   border-bottom: 1px solid #f5f5f5;
   &.error {
     border-color: #e73c00;
   }
-  &__error {
+  &--error {
     position: absolute;
-    padding-top: 10px;
+    top: 30px;
+    padding-top: 5px;
     font-size: 11px;
     color: #e73c00;
   }

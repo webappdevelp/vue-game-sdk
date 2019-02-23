@@ -1,5 +1,5 @@
 // 渠道号
-export const channel_id = 190;
+export const channelId = 190;
 
 // api 账号接口
 export const api = '//apis.longqihuyu.com';

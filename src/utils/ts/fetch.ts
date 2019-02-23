@@ -58,10 +58,10 @@ function formatDatas(headers: { [prop: string]: string }, datas: any) {
 }
 
 function checkCode(response: {
-  status: number;
-  message: string;
-  data: any;
-  data_list: any;
+  status?: number;
+  message?: string;
+  data?: any;
+  data_list?: any;
   Code?: number;
   UserId?: string;
   OrderId?: string;
@@ -90,7 +90,7 @@ function checkCode(response: {
     };
   }
   throw new CusError({
-    message: Message || message,
+    message: Message || message || '接口请求异常',
     code: status || Code
   });
 }

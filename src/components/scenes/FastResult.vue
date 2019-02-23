@@ -6,9 +6,9 @@
         <h4>请牢记您的账号密码！</h4>
         <ul>
           <li>账号：{{ data.username }}</li>
-          <li>密码：原密码</li>
+          <li>密码：原始密码</li>
         </ul>
-        <btn text="进入游戏" @click="action"/>
+        <btn text="进入游戏" @click="hide"/>
       </div>
     </div>
   </modal>
@@ -38,7 +38,7 @@ export default class HyFastRegister extends Vue {
   private data!: object;
 
   // methods
-  private action() {
+  private hide() {
     this.$emit('click');
   }
 }
@@ -60,7 +60,7 @@ export default class HyFastRegister extends Vue {
     user-select: none;
   }
   &-body {
-    padding-top: 25px;
+    padding-top: 20px;
     width: 100%;
     overflow: hidden;
   }
@@ -71,7 +71,7 @@ export default class HyFastRegister extends Vue {
     text-align: center;
   }
   ul {
-    margin: 25px 0;
+    margin: 15px 0;
   }
   li {
     font-size: 14px;

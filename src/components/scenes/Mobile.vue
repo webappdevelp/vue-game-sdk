@@ -2,11 +2,16 @@
   <modal :show="show" animate="right">
     <form ref="mobileLogin" class="hy-form" @submit="submit">
       <div class="hy-form-header">
-        <Icon name="back" @click="hide" />
+        <Icon name="back" @click="hide"/>
         {{ title }}
       </div>
       <div class="hy-form-body">
-        <div class="hy-form-item" v-for="(obj, key) in form" :key="key" :class="obj.msg !== '' ? 'error' : ''">
+        <div
+          class="hy-form-item"
+          v-for="(obj, key) in form"
+          :key="key"
+          :class="obj.msg !== '' ? 'error' : ''"
+        >
           <hy-input
             :icon="obj.icon"
             v-model="obj.value"
@@ -24,7 +29,7 @@
           />
           <div v-if="obj.msg !== ''" class="hy-form-item--error">{{ obj.msg }}</div>
         </div>
-        <btn style="width: 100%" text="注册/登录" type="submit" />
+        <btn style="width: 100%; margin-top: 10px;" text="注册/登录" type="submit"/>
       </div>
     </form>
   </modal>
@@ -47,13 +52,15 @@ const defaultForm: any = {
   }
 };
 let tempForm: any = {};
-import deepCopy from '@/utils/ts/deepCopy';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
 import HyInput from '../form/Input.vue';
 import GetCode from '../GetCodeBtn.vue';
 import Btn from '../Btn.vue';
+import deepCopy from '@/utils/ts/deepCopy';
+import { validateForm } from '@/utils/ts/form';
+import { regMobile } from '@/utils/ts/regexps';
 @Component({
   components: {
     Modal,
@@ -82,22 +89,7 @@ export default class HyScenesMobileLogin extends Vue {
 
   private data() {
     return {
-      form: {
-        mobile: {
-          icon: 'mobile',
-          type: 'number',
-          placeholder: '请输入手机号',
-          value: '',
-          msg: ''
-        },
-        code: {
-          icon: 'safety',
-          type: 'text',
-          placeholder: '请输入验证码',
-          value: '',
-          msg: ''
-        }
-      }
+      form: deepCopy(defaultForm)
     };
   }
 
@@ -105,11 +97,7 @@ export default class HyScenesMobileLogin extends Vue {
   @Watch('form', { deep: true })
   private changeForm(val: any, old: any) {
     for (const key in val) {
-      if (
-        val.hasOwnProperty(key) &&
-        !!tempForm[key] &&
-        val[key].value !== tempForm[key].value
-      ) {
+      if (val.hasOwnProperty(key) && !!tempForm[key] && val[key].value !== tempForm[key].value) {
         val[key].msg = '';
       }
     }
@@ -118,8 +106,7 @@ export default class HyScenesMobileLogin extends Vue {
   // methods
   private hide() {
     this.$data.form = deepCopy(defaultForm);
-    this.$emit('update:show', false);
-    this.$emit('cb');
+    this.$emit('back');
   }
   private getCodeErrCb(msg: string) {
     if (msg) {
@@ -131,14 +118,25 @@ export default class HyScenesMobileLogin extends Vue {
       this.$data.form = form;
     }
   }
-  private submit(e: any) {
-    const { form } = this.$data;
-    tempForm = deepCopy({
-      ...tempForm,
-      form
-    });
-    console.log(this.$data.form);
+  private submit(e: Event) {
     e.preventDefault();
+    const { form } = this.$data;
+    tempForm = deepCopy(form);
+    const rules = {
+      mobile: [{ required: true, msg: '请输入手机号' }, { reg: regMobile, msg: '手机号格式错误' }],
+      code: [{ required: true, msg: '请输入验证码' }, { length: 4, msg: '验证码错误 ' }]
+    };
+    this.$data.form = validateForm(form, rules);
+    const datas: any = {};
+    for (const key in form) {
+      if (form.hasOwnProperty(key)) {
+        if (!!form[key].msg) {
+          return;
+        }
+        datas[key] = form[key].value;
+      }
+    }
+    this.$emit('submit', { action: 'mobile', params: { ...datas } });
   }
 }
 </script>
@@ -216,5 +214,4 @@ export default class HyScenesMobileLogin extends Vue {
   line-height: 30px;
   max-width: 100px;
 }
-
 </style>

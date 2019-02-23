@@ -5,9 +5,8 @@ import mutations from './mutations';
 import actions from './actions';
 import deepCopy from '@/utils/ts/deepCopy';
 
-
 const gid = getQuery('gid') || '0';
-const userId = getStorage(`${gamerStorageName}${gid}`) || '';
+const gameUserInfo = getStorage(`${gamerStorageName}${gid}`) || null;
 
 const info: {
   token?: string;
@@ -16,14 +15,47 @@ const info: {
   username?: string;
   mobile?: string;
   userId?: string;
-} = getStorage(userStorageName) || { userId };
+} = getStorage(userStorageName) || { userId: gameUserInfo && gameUserInfo.userId || '' };
 
 const state = {
-  info: deepCopy(info)
+  infos: deepCopy(info),
+  action: ''
 };
 
 const getters = {
-  getUserInfo() {}
+  // 判断是否登录平台
+  isLogin: ({ infos }: { infos: { uid: number, token: string}}) => {
+    const { uid, token } = infos;
+    if (!uid && !token) {
+      return false;
+    }
+    return true;
+  },
+  // 判断是否登录游戏
+  isGameLogin: ({ infos }: { infos: { userId: string }}) => {
+    const { userId } = infos;
+    if (!!userId) {
+      return true;
+    }
+    return false;
+  },
+  // 获取操作手柄
+  getAction: ({ action }: { action: string}) => {
+    return action;
+  },
+  // 获取提供给 CP 的用户登录信息
+  getSDKUserInfo: ({ infos }: { infos: any}) => {
+    if (infos.userId === '') {
+      return null;
+    }
+    return {
+      hyUid: infos.uid,
+      channelUserId: infos.guid,
+      channelUserName: infos.username,
+      userId: infos.userId,
+      token: infos.token
+    };
+  }
 };
 
 export default {

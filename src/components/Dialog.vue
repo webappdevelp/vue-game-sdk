@@ -1,14 +1,14 @@
 <template>
-<div class="hy-dialog">
-  <transition name="fade">
-    <div v-if="show" ref="bg" class="hy-dialog-bg" :style="bgStyle" @click="close"></div>
-  </transition>
-  <transition :name="animate">
-    <template v-if="show">
-      <slot :scope="frontStyle"></slot>
-    </template>
-  </transition>
-</div>
+  <div class="hy-dialog">
+    <transition name="fade">
+      <div v-if="show" ref="bg" class="hy-dialog-bg" :style="bgStyle" @click="close"></div>
+    </transition>
+    <transition :name="animate">
+      <template v-if="show">
+        <slot :scope="frontStyle"></slot>
+      </template>
+    </transition>
+  </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
@@ -44,13 +44,13 @@ export default class HyScenesModal extends Vue {
   get bgStyle() {
     return {
       zIndex: this.zIndex
-    }
+    };
   }
   get frontStyle() {
     return {
       position: 'fixed',
       zIndex: Number(this.zIndex) + 1
-    }
+    };
   }
 
   // methods
@@ -87,12 +87,12 @@ export default class HyScenesModal extends Vue {
 }
 
 .fade-enter-active {
-  animation: fadeIn .2s;
+  animation: fadeIn 0.2s;
 }
 .fade-leave-active {
-  animation: fadeIn .2s reverse;
+  animation: fadeIn 0.2s reverse;
 }
-@keyframes fadeIn{
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -102,10 +102,10 @@ export default class HyScenesModal extends Vue {
 }
 
 .right-enter-active {
-  animation: rightIn .3s;
+  animation: rightIn 0.3s;
 }
 .right-leave-active {
-  animation: rightIn .3s reverse;
+  animation: rightIn 0.3s reverse;
 }
 @keyframes rightIn {
   from {
