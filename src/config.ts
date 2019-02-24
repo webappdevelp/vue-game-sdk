@@ -10,8 +10,11 @@ export const u9Api = '//u9phps.longqihuyu.com';
 // cq 接口
 export const cqApi = 'http://testcq.zhihuigu168.com';
 
+// 数据存储时间(天)
+export const expireDays = 365;
+
 // 存储用户信息所使用的键名
-export const userStorageName = 'uni';
+export const userStorageName = 'uu';
 
 // 存储的玩家信息所使用的键名
-export const gamerStorageName = 'gm';
+export const gamerStorageName = 'gu';

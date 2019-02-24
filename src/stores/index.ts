@@ -1,5 +1,5 @@
-import userInfo from './userInfo';
+import user from './user';
 
 export default {
-  userInfo
+  user
 };

@@ -1,39 +1,31 @@
 <template>
-  <div class="hy-account-manger">
-    <modal :show="show">
-      <div class="hy-amanger">
-        <Icon name="close" @click="hide"/>
-        <div class="hy-amanger-header">账号管理</div>
-        <div class="hy-amanger-body">
-          <ul class="hy-amanger-ul">
-            <li v-for="(item, index) in items" :key="index" @click="switchHandler(item.type)">
-              <Icon :name="item.icon" />
-              <div class="hy-amanger-li">
-                <span>{{ item.name }}</span>
-                <span v-if="item.type === 'mobile' && !hasMobile" class="red-dot"></span>
-                <span v-else-if="item.type === 'mobile' && hasMobile" class="sub-text">已绑定</span>
-              </div>
-            </li>
-          </ul>
-        </div>
+  <modal :show="show">
+    <div class="hy-amanger">
+      <Icon name="close" @click="hide"/>
+      <div class="hy-amanger-header">账号管理</div>
+      <div class="hy-amanger-body">
+        <ul class="hy-amanger-ul">
+          <li v-for="(item, index) in items" :key="index" @click="action(item.type)">
+            <Icon :name="item.icon"/>
+            <div class="hy-amanger-li">
+              <span>{{ item.name }}</span>
+              <span v-if="item.type === 'mobile' && !datas.user.mobile" class="red-dot"></span>
+              <span v-else-if="item.type === 'mobile' && !!datas.user.mobile" class="sub-text">已绑定</span>
+            </div>
+          </li>
+        </ul>
       </div>
-    </modal>
-    <bind-mobile :show.sync="bindMobile" action="bindMobile" @cb="showManger" />
-    <password :show.sync="showPsw" :type="hasMobile"  @cb="showManger" />
-  </div>
+    </div>
+  </modal>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
-import BindMobile from './Mobile.vue';
-import Password from './Password.vue';
 @Component({
   components: {
     Modal,
-    Icon,
-    BindMobile,
-    Password
+    Icon
   }
 })
 export default class HyAccountManger extends Vue {
@@ -42,16 +34,24 @@ export default class HyAccountManger extends Vue {
     default: false
   })
   private show!: boolean;
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private datas!: {
+    user: {
+      mobile: '';
+    };
+  };
 
   private data() {
     return {
       items: [
         { type: 'mobile', name: '绑定手机号', icon: 'mobile__w', link: '' },
         { type: 'psw', name: '修改密码', icon: 'lock__w', link: '' }
-      ],
-      hasMobile: false,
-      bindMobile: false,
-      showPsw: false
+      ]
     };
   }
 
@@ -60,17 +60,13 @@ export default class HyAccountManger extends Vue {
     this.$emit('update:show', false);
   }
   // 切换控制面板
-  private switchHandler(type: string) {
-    if (type === 'mobile' && !this.$data.hasMobile) {
-      this.$data.bindMobile = true;
-    } else {
-      this.$data.showPsw = true;
-    }
+  @Emit()
+  private action(type: string) {
     this.hide();
-  }
-  // 重新显示账号管理中心
-  private showManger() {
-    this.$emit('update:show', true);
+    if (type === 'mobile' && !this.datas.user.mobile) {
+      return type;
+    }
+    return type;
   }
 }
 </script>

@@ -66,8 +66,10 @@ export default class HyGetCodeBtn extends Vue {
     }, 1000);
   }
   private getCode() {
-    if (!regMobile.test(this.mobile)) {
-      return this.$emit('cb', '手机号错误');
+    if (!this.mobile) {
+      return this.$emit('cb', '请输入手机号');
+    } else if (!regMobile.test(this.mobile)) {
+      return this.$emit('cb', '手机号格式错误');
     }
     if (lock) {
       return;

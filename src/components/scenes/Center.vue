@@ -2,26 +2,25 @@
   <hy-dialog :show="show" animate="left" z-index="30" @close="hide">
     <template slot-scope="scope">
       <div class="hy-center" :style="scope.scope">
-        <center-header />
+        <center-header :datas="userDatas" @action="action" />
         <ul class="hy-center-current">
           <li>
-            <p>您正在玩：贪玩蓝月</p>
+            <p>您正在玩：{{ gameDatas.name }}</p>
           </li>
         </ul>
         <div class="hy-center-body">
-          <menus :current.sync="currentTab" />
+          <menus :current.sync="currentTab"/>
           <div class="center-info-box">
-            <gifts v-if="currentTab === 1" />
-            <infos v-else-if="currentTab === 2" />
+            <gifts v-if="currentTab === 1"/>
+            <infos v-else-if="currentTab === 2"/>
           </div>
         </div>
         <div class="hy-center-control">
           <a href="javascript:;" @click="hide">
-            <icon name="back" />
+            <icon name="back"/>
           </a>
           <a href="javascript:;" @click="refresh">
-            <icon name="refresh__b" />
-            刷新游戏
+            <icon name="refresh__b"/>刷新游戏
           </a>
         </div>
       </div>
@@ -29,7 +28,7 @@
   </hy-dialog>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 import HyDialog from '../Dialog.vue';
 import CenterHeader from './center/Header.vue';
 import Menus from './center/Menus.vue';
@@ -52,6 +51,20 @@ export default class HyScenesCenter extends Vue {
     default: false
   })
   private show!: boolean;
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private userDatas!: object;
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private gameDatas!: object;
 
   private data() {
     return {
@@ -60,6 +73,10 @@ export default class HyScenesCenter extends Vue {
   }
 
   // methods
+  @Emit()
+  private action(params: { action: string; params: any}) {
+    return params;
+  }
   private hide() {
     this.$emit('update:show', false);
   }
@@ -78,8 +95,7 @@ export default class HyScenesCenter extends Vue {
 }
 .hy-center-current {
   padding: 0 12px;
-  background: url('../../assets/scenes/center/gl-panel-server.jpg') center
-    no-repeat;
+  background: url('../../assets/scenes/center/gl-panel-server.jpg') center no-repeat;
   background-size: 100% auto;
   li {
     padding: 10px 0;

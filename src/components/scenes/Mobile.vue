@@ -29,7 +29,7 @@
           />
           <div v-if="obj.msg !== ''" class="hy-form-item--error">{{ obj.msg }}</div>
         </div>
-        <btn style="width: 100%; margin-top: 10px;" text="注册/登录" type="submit"/>
+        <btn style="width: 100%; margin-top: 10px;" :text="btnText" type="submit"/>
       </div>
     </form>
   </modal>
@@ -81,6 +81,11 @@ export default class HyScenesMobileLogin extends Vue {
     default: '手机号登录'
   })
   private title!: string;
+  @Prop({
+    type: String,
+    default: '注册/登录'
+  })
+  private btnText!: string;
   @Prop({
     type: String,
     default: 'register'

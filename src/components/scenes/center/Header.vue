@@ -1,18 +1,21 @@
 <template>
   <div class="hy-center-header">
-    <div class="user-avatar" style="background-image: url('https://thirdqq.qlogo.cn/qqapp/101338948/780DF1D16026306DE02AC9C0E77DD0E5/100')"></div>
+    <div
+      class="user-avatar"
+      style="background-image: url('https://thirdqq.qlogo.cn/qqapp/101338948/780DF1D16026306DE02AC9C0E77DD0E5/100')"
+    ></div>
     <ul class="user-info">
       <li>
-        <a href="javascript:;">『账号管理』</a>
-        <a href="javascript:;">『切换账号』</a>
+        <a href="javascript:;" @click="action('account')">『账号管理』</a>
+        <a href="javascript:;" @click="action('logOut')">『切换账号』</a>
       </li>
-      <li>平台账号：123456</li>
+      <li>平台账号：{{ datas.username }}</li>
     </ul>
-    <a class="wxtip" href="javascript:;">边聊边玩</a>
+    <a class="wxtip" href="javascript:;" @click="action('wxTip')">边聊边玩</a>
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 @Component
 export default class HyCenterHeader extends Vue {
   @Prop({
@@ -21,7 +24,21 @@ export default class HyCenterHeader extends Vue {
       return {};
     }
   })
-  private data!: object;
+  private datas!: object;
+
+  // methods
+  @Emit()
+  private action(action: string) {
+    if (action === 'wxTip') {
+      return {
+        action,
+        params: '这样玩游戏和聊天就可以同时进行。'
+      };
+    }
+    return {
+      action
+    };
+  }
 }
 </script>
 <style lang="scss" scoped>

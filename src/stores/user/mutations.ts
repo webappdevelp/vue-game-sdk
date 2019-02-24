@@ -1,0 +1,62 @@
+import { userStorageName, gamerStorageName, expireDays } from '@/config';
+import { setStorage, delStorage } from '@/utils/ts/storage';
+import {
+  UPDATEUSERINFO,
+  UPDATEUSERACTION,
+  UPDATEGAMERINFO,
+  DELUSERINFO,
+  UPDATEUSERAPPINFO
+} from '@/stores/types';
+
+const mutations = {
+  [UPDATEUSERINFO](
+    state: any,
+    { data }: { data: { data: any; action: string } }
+  ) {
+    state.userInfo = {
+      ...state.userInfo,
+      ...data.data
+    };
+    state.action = data.action || '';
+    if (data.action === 'logined') {
+      setStorage(userStorageName, state.userInfo, expireDays);
+    }
+  },
+  // 更新操作手柄
+  [UPDATEUSERACTION](state: any, { data }: { data: string }) {
+    state.action = data;
+  },
+  // 更新游戏玩家信息
+  [UPDATEGAMERINFO](state: any, { data }: { data: { appId: string } }) {
+    state.gamerInfo = {
+      ...state.gamerInfo,
+      ...data
+    };
+    setStorage(
+      `${gamerStorageName}-${state.userInfo.uid}-${data.appId}`,
+      state.gamerInfo,
+      expireDays
+    );
+  },
+  [UPDATEUSERAPPINFO](state: any, { data }: { data: any }) {
+    state.userAppInfo = {
+      ...state.userAppInfo,
+      ...data
+    };
+  },
+  // 删除保存的用户信息: 先删除与其相关的游戏玩家信息，再删除用户信息
+  [DELUSERINFO](state: any) {
+    const reg = new RegExp(`${gamerStorageName}-${state.userInfo.uid}`);
+    for (const key in window.localStorage) {
+      if (window.localStorage.hasOwnProperty(key) && reg.test(key)) {
+        delStorage(key);
+      }
+    }
+    state.gamerInfo = {};
+    delStorage(userStorageName);
+    state.userInfo = {};
+    state.userAppInfo = {};
+  }
+};
+
+export default mutations;

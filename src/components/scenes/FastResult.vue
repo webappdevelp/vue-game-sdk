@@ -5,7 +5,7 @@
       <div class="hy-fastreg-body">
         <h4>请牢记您的账号密码！</h4>
         <ul>
-          <li>账号：{{ data.username }}</li>
+          <li>账号：{{ datas.username }}</li>
           <li>密码：原始密码</li>
         </ul>
         <btn text="进入游戏" @click="hide"/>
@@ -35,7 +35,7 @@ export default class HyFastRegister extends Vue {
       return {};
     }
   })
-  private data!: object;
+  private datas!: object;
 
   // methods
   private hide() {

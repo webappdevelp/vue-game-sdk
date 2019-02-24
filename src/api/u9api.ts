@@ -4,7 +4,9 @@ import { post } from '../utils/ts/fetch';
 function sendPost(url: string, params: any = {}) {
   return post(`${u9Api}${url}`, {
     datas: {
+      channelId,
       ChannelId: channelId,
+      channel_id: channelId,
       ...params
     },
     headers: {

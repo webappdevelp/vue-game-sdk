@@ -1,12 +1,17 @@
 <template>
   <modal :show="show" animate="right">
-    <form ref="mobilePsw" class="hy-form">
+    <form ref="mobilePsw" class="hy-form" @submit="submit">
       <div class="hy-form-header">
-        <Icon name="back" @click="hide" />
-        修改密码
+        <Icon name="back" @click="hide"/>修改密码
       </div>
+      <div class="hy-password-tip">*一键注册账号原密码可输入任意字符</div>
       <div class="hy-form-body">
-        <div class="hy-form-item" v-for="(obj, key) in form" :key="key" :class="obj.msg !== '' ? 'error' : ''">
+        <div
+          class="hy-form-item"
+          v-for="(obj, key) in form"
+          :key="key"
+          :class="obj.msg !== '' ? 'error' : ''"
+        >
           <hy-input
             :icon="obj.icon"
             v-model="obj.value"
@@ -23,7 +28,7 @@
           />
           <div v-if="obj.msg !== ''" class="hy-form-item--error">{{ obj.msg }}</div>
         </div>
-        <btn style="width: 100%" text="注册/登录" type="submit" />
+        <btn style="width: 100%;margin-top: 10px;" text="确认修改" type="submit"/>
       </div>
     </form>
   </modal>
@@ -80,13 +85,16 @@ const defaultPForm: any = {
   }
 };
 let tempForm: any = {};
-import deepCopy from '@/utils/ts/deepCopy';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
 import HyInput from '../form/Input.vue';
 import GetCode from '../GetCodeBtn.vue';
 import Btn from '../Btn.vue';
+import deepCopy from '@/utils/ts/deepCopy';
+import { regMobile } from '@/utils/ts/regexps';
+import { validateForm } from '@/utils/ts/form';
+
 @Component({
   components: {
     Modal,
@@ -106,11 +114,11 @@ export default class HyPassword extends Vue {
     type: Boolean,
     default: false
   })
-  private type!: boolean;
+  private mobile!: boolean;
 
   private data() {
     return {
-      form: this.type ? deepCopy(defaultForm) : deepCopy(defaultPForm)
+      form: this.mobile ? deepCopy(defaultForm) : deepCopy(defaultPForm)
     };
   }
 
@@ -118,11 +126,7 @@ export default class HyPassword extends Vue {
   @Watch('form', { deep: true })
   private changeForm(val: any, old: any) {
     for (const key in val) {
-      if (
-        val.hasOwnProperty(key) &&
-        !!tempForm[key] &&
-        val[key].value !== tempForm[key].value
-      ) {
+      if (val.hasOwnProperty(key) && !!tempForm[key] && val[key].value !== tempForm[key].value) {
         val[key].msg = '';
       }
     }
@@ -130,11 +134,8 @@ export default class HyPassword extends Vue {
 
   // methods
   private hide() {
-    this.$data.form = this.type
-      ? deepCopy(defaultForm)
-      : deepCopy(defaultPForm);
-    this.$emit('update:show', false);
-    this.$emit('cb');
+    this.$data.form = this.mobile ? deepCopy(defaultForm) : deepCopy(defaultPForm);
+    this.$emit('back');
   }
   private getCodeErrCb(msg: string) {
     if (msg) {
@@ -145,6 +146,46 @@ export default class HyPassword extends Vue {
       });
       this.$data.form = form;
     }
+  }
+  private submit(e: Event) {
+    e.preventDefault();
+    const { form } = this.$data;
+    tempForm = deepCopy(form);
+    let rules: any = {
+      mobile: [{ required: true, msg: '请输入手机号' }, { reg: regMobile, msg: '手机号格式错误' }],
+      code: [{ required: true, msg: '请输入验证码' }, { length: 4, msg: '验证码错误 ' }],
+      password: [
+        { required: true, msg: '请输入密码' },
+        { minLength: 6, msg: '密码长度不能小于6位' }
+      ]
+    };
+    if (!this.mobile) {
+      rules = {
+        old_password: [{ required: true, msg: '请输入原密码' }],
+        password: [
+          { required: true, msg: '请输入新密码' },
+          { minLength: 6, msg: '密码长度不能小于6位' }
+        ],
+        re_password: [
+          { required: true, msg: '请再次输入新密码' },
+          { minLength: 6, msg: '密码长度不能小于6位' }
+        ]
+      };
+    }
+    this.$data.form = validateForm(form, rules);
+    const datas: any = {};
+    for (const key in form) {
+      if (form.hasOwnProperty(key)) {
+        if (!!form[key].msg) {
+          return;
+        }
+        datas[key] = form[key].value;
+      }
+    }
+    if (!this.mobile && form.password.value !== form.re_password.value) {
+      return form.re_password.msg = '两次密码输入不一致';
+    }
+    this.$emit('submit', { action: this.mobile ? 'mobile' : 'psw', params: { ...datas } });
   }
 }
 </script>

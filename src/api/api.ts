@@ -61,8 +61,46 @@ export function getCode(params: { mobile: string; action: string }) {
 }
 
 // 获取服务信息
-export function getServiceInfo(params: { app_id: string }) {
+export function getServiceInfo(params: { token: string; guid: string }) {
   return sendPost('/hy/getServiceInfo', {
+    ...params
+  });
+}
+
+// 绑定手机号
+export function bindMobile(params: {
+  token: string;
+  guid: string;
+  mobile: string;
+  code: string;
+}) {
+  return sendPost('/user/bindMobile', {
+    ...params
+  });
+}
+
+// 手机号修改密码
+export function resetPassword(params: {
+  token: string;
+  guid: string;
+  mobile: string;
+  code: string;
+  password: string;
+}) {
+  return sendPost('/user/resetPassword', {
+    ...params
+  });
+}
+
+// 更新密码
+export function updatePassword(params: {
+  token: string;
+  guid: string;
+  old_password: string;
+  password: string;
+  re_password: string;
+}) {
+  return sendPost('/user/updatePassword', {
     ...params
   });
 }
@@ -125,6 +163,6 @@ export function wxPay(params: {
 }
 
 // 退出登录
-export function logOut(params: { app_id: string }) {
-  return sendPost('/user/logout', params);
+export function logOut() {
+  return sendPost('/user/logout');
 }
