@@ -4,7 +4,7 @@ import { post } from '../utils/ts/fetch';
 function sendPost(url: string, params: any = {}) {
   return post(`${api}${url}`, {
     datas: {
-      channelId,
+      channel: channelId,
       channel_id: channelId,
       ...params
     },
@@ -12,13 +12,6 @@ function sendPost(url: string, params: any = {}) {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
   });
-}
-
-// 生成虚拟订单号
-function getVtOrderId() {
-  const date = new Date();
-  return `${date.getFullYear()}${date.getMonth() +
-    1}${date.getDate()}${date.getTime()}${date.getSeconds()}`;
 }
 
 // 检查用户是否存在
@@ -47,9 +40,9 @@ export function mobileLogin(params: {
 }
 
 // 一键注册
-export function fastReg(password: string) {
+export function fastReg(params: { password: string; device: string }) {
   return sendPost('/user/onekeyRegister', {
-    password
+    ...params
   });
 }
 
@@ -102,63 +95,6 @@ export function updatePassword(params: {
 }) {
   return sendPost('/user/updatePassword', {
     ...params
-  });
-}
-
-// 支付
-export function pay(params: {
-  u9uid: string;
-  guid: string;
-  ry_device_id: string;
-  app_order_id: string;
-  amount: number;
-  subject: string;
-  body: string;
-  http_source: string;
-  pay_channel: string;
-  callback_url: string;
-  ext: string;
-  app_ext: string;
-  order_id?: string;
-  openid?: string;
-  IsSwitchPayChannel?: number;
-}) {
-  params = {
-    ...params,
-    order_id: getVtOrderId(),
-    IsSwitchPayChannel: 1
-  };
-  const query = Object.keys(params).reduce((prev: string, next: string) => {
-    if (next) {
-      return `${next}=${(params as any)[next]}${!!prev ? `&${prev}` : ''}`;
-    }
-    return prev;
-  }, '');
-  window.location.href = `${api}/pay/index?${query}`;
-}
-
-// 微信支付
-export function wxPay(params: {
-  u9uid: string;
-  guid: string;
-  ry_device_id: string;
-  app_order_id: string;
-  order_id: string;
-  amount: number;
-  subject: string;
-  body: string;
-  http_source: string;
-  pay_channel: string;
-  callback_url: string;
-  ext: string;
-  app_ext: string;
-  openid?: string;
-  IsSwitchPayChannel: number;
-}) {
-  return sendPost('/pay/getOrder', {
-    ...params,
-    http_source: 'JSAPI',
-    pay_channel: 'WXPAY'
   });
 }
 

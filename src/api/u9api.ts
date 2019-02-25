@@ -4,9 +4,9 @@ import { post } from '../utils/ts/fetch';
 function sendPost(url: string, params: any = {}) {
   return post(`${u9Api}${url}`, {
     datas: {
-      channelId,
-      ChannelId: channelId,
+      channel: channelId,
       channel_id: channelId,
+      ChannelId: channelId,
       ...params
     },
     headers: {
@@ -52,23 +52,4 @@ export function report(params: {
   vip?: number;
 }) {
   return sendPost('/user/roleReport', params);
-}
-
-// 支付
-export function pay(params: {
-  device: number;
-  UserId: string;
-  ProductId: string;
-  ProductOrderId: string;
-  amount: number;
-  CallbackUrl: string;
-  Ext: string;
-  AppExt: string;
-  DeviceId: string;
-  openid?: string;
-}) {
-  return sendPost('/payRequest/payRequest', {
-    IsSwitchPayChannel: 1,
-    ...params
-  });
 }

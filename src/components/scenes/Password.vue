@@ -4,7 +4,7 @@
       <div class="hy-form-header">
         <Icon name="back" @click="hide"/>修改密码
       </div>
-      <div class="hy-password-tip">*一键注册账号原密码可输入任意字符</div>
+      <div v-if="!mobile" class="hy-password-tip">*一键注册账号原密码可输入任意字符</div>
       <div class="hy-form-body">
         <div
           class="hy-form-item"
@@ -134,8 +134,11 @@ export default class HyPassword extends Vue {
 
   // methods
   private hide() {
-    this.$data.form = this.mobile ? deepCopy(defaultForm) : deepCopy(defaultPForm);
+    this.updateLayout();
     this.$emit('back');
+  }
+  private updateLayout() {
+    this.$data.form = this.mobile ? deepCopy(defaultForm) : deepCopy(defaultPForm);
   }
   private getCodeErrCb(msg: string) {
     if (msg) {
@@ -186,6 +189,15 @@ export default class HyPassword extends Vue {
       return form.re_password.msg = '两次密码输入不一致';
     }
     this.$emit('submit', { action: this.mobile ? 'mobile' : 'psw', params: { ...datas } });
+    // this.updateLayout();
+  }
+
+  // lifecycles (谨慎使用 updated 钩子函数)
+  private updated() {
+    const form = this.mobile ? JSON.stringify(defaultForm) : JSON.stringify(defaultPForm);
+    if (!this.show && JSON.stringify(this.$data.form) !== form) {
+      this.$data.form = JSON.parse(form);
+    }
   }
 }
 </script>
@@ -248,5 +260,12 @@ export default class HyPassword extends Vue {
   height: 30px;
   line-height: 30px;
   max-width: 100px;
+}
+
+.hy-password-tip {
+  margin: 15px 0 -15px;
+  font-size: 10px;
+  color: #f07234;
+  text-align: center;
 }
 </style>

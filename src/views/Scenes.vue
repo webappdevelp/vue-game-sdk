@@ -16,7 +16,7 @@
       :show="bindMobile"
       title="绑定手机号"
       btn-text="确认绑定"
-      action="bindMobile"
+      action="bind_mobile"
       @back="showAccount"
       @submit="mobileBind"
     />
@@ -32,8 +32,9 @@
     <iframe
       v-if="gameDatas.link !== ''"
       @load="gameInit"
-      ref="game"
+      ref="gameWindow"
       :src="gameDatas.link"
+      id="gameWindow"
       height="100%"
       width="100%"
       scrolling="no"
@@ -62,8 +63,10 @@ import { mapState } from 'vuex';
 import { cqApi } from '@/config';
 import { get } from '@/utils/ts/fetch';
 import { deviceInit } from '@/api/u9api';
+import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getStorage, setStorage } from '@/utils/ts/storage';
 import isWx from '@/utils/ts/device/isWx';
+import { wxPayRequest } from '@/utils/ts/wx';
 
 @Component({
   components: {
@@ -96,7 +99,7 @@ import isWx from '@/utils/ts/device/isWx';
         };
       },
       controlRedDot(state: any) {
-        if (!state.userInfo.mobile) {
+        if (state.userInfo.uid && !state.userInfo.mobile) {
           return '1';
         }
         return '';
@@ -104,7 +107,7 @@ import isWx from '@/utils/ts/device/isWx';
       action(state: any) {
         if (this.$data.loginType === 'fast') {
           this.$data.login = false;
-          if (/gameLogined|updated/i.test(state.action)) {
+          if (/gameLogined/i.test(state.action)) {
             this.$data.fastRest = true;
           }
         }
@@ -117,7 +120,7 @@ import isWx from '@/utils/ts/device/isWx';
           });
         }
         // 执行登录成功操作 playGame
-        if (this.$data.loginType !== 'fast' && state.action === 'gameLogined') {
+        if (/login|mobile/.test(this.$data.loginType) && state.action === 'gameLogined') {
           this.playGame();
         }
         // 退出登录
@@ -125,10 +128,6 @@ import isWx from '@/utils/ts/device/isWx';
           window.setTimeout(() => {
             window.location.reload();
           }, 2500);
-        }
-        // 账号管理变更
-        if (!!this.$data.accountActionType) {
-          this.showAccount();
         }
         return state.action;
       }
@@ -225,13 +224,30 @@ export default class Scenes extends Vue {
       let datas = JSON.parse(data);
       datas = datas || {};
       const { action, params } = datas;
-      console.log(`${action}：hySDK -> hyCpSDK successed`);
+      console.log(`${action}：hyCpSDK -> hySDK successed`);
       switch (action) {
-        case 'roleReport':
-          this.$store.dispatch('user/logReport', {
-            ...params,
-            ...this.$data.sdkOptions
+        case 'pay':
+          console.log(params);
+          this.goPay({
+            ...params
           });
+          break;
+        case 'roleReport':
+          this.$store
+            .dispatch('user/logReport', {
+              ...params,
+              ...this.$data.sdkOptions
+            })
+            .then(() => {
+              this.postMessage({
+                action: 'roleReportSuccess'
+              });
+            })
+            .catch(() => {
+              this.postMessage({
+                action: 'roleReportFail'
+              });
+            });
           break;
         case 'logOut':
           this.$store.dispatch('user/logOut');
@@ -259,14 +275,14 @@ export default class Scenes extends Vue {
   }
   // 开始和cp sdk通信
   private gameInit() {
-    hyPSMSource = (this.$refs.game as HTMLIFrameElement).contentWindow;
+    hyPSMSource = (this.$refs.gameWindow as HTMLIFrameElement).contentWindow;
     // 游戏加载成功后即开始设备初始化操作
     const { openid } = this.$data.sdkOptions;
     const deviceImei = getStorage('device');
     deviceInit({
       ...this.$data.sdkOptions,
-      brand_desc: !Number(openid) ? '' : '公众号',
-      imei: !Number(openid) ? openid : deviceImei || '0'
+      brand_desc: openid === '' || openid === '0' ? '' : '公众号',
+      imei: openid !== '' && openid !== '0' ? openid : deviceImei || '0'
     })
       .then((res: { data: { device: number; imei: string } }) => {
         const { imei, device } = res.data;
@@ -294,8 +310,7 @@ export default class Scenes extends Vue {
         this.$data.mobile = true;
         break;
       case 'fast':
-        this.$data.loginType = 'fast';
-        this.$store.dispatch('user/login', {
+        this.goLogin({
           action: 'fast',
           params: {
             password: md5(`hy${new Date().getTime()}LongQi`)
@@ -334,6 +349,85 @@ export default class Scenes extends Vue {
       datas: this.$store.getters['user/getSDKUserInfo']
     });
   }
+  // 游戏内支付
+  private goPay(params: {
+    cpOrderId: string;
+    amount: number;
+    body: string;
+    subject: string;
+    callback_url?: string;
+    app_ext?: string;
+  }) {
+    const userInfo = this.$store.getters['user/getUserInfo'];
+    const gamerInfo = this.$store.getters['user/getGamerInfo'];
+    const { uid, guid } = userInfo;
+    const { userId } = gamerInfo;
+    const { amount, cpOrderId, body, subject, callback_url, app_ext } = params;
+    this.updateLoading(true);
+    u9Pay({
+      uid: userInfo.uid,
+      guid: userInfo.guid,
+      UserId: userId,
+      amount,
+      ProductId: this.$data.sdkOptions.app_id,
+      ProductOrderId: cpOrderId,
+      CallbackUrl: callback_url,
+      AppExt: app_ext,
+      Ext: app_ext,
+      ...this.$data.sdkOptions
+    }).then((res: { OrderId: string | undefined }) => {
+      const { OrderId } = res;
+      if (!isWx) {
+        return apiPay({
+          u9uid: userId,
+          guid: userInfo.guid,
+          ry_device_id: this.$data.sdkOptions.device,
+          app_order_id: OrderId || '',
+          amount,
+          body,
+          subject,
+          ext: app_ext,
+          app_ext,
+          callback_url,
+          ...this.$data.sdkOptions
+        });
+      }
+      wxPay({
+        guid: userInfo.guid,
+        ry_device_id: this.$data.sdkOptions.device,
+        openid: this.$data.sdkOptions.openid,
+        app_order_id: OrderId || '',
+        amount,
+        body,
+        subject,
+        ext: app_ext,
+        app_ext,
+        callback_url
+      })
+        .then((rest: { data: { pay_info: any } }) => {
+          const { pay_info } = rest.data;
+          wxPayRequest(pay_info)
+            .then(() => {
+              this.updateLoading(false);
+              this.postMessage({
+                action: 'paySuccess'
+              });
+            })
+            .catch((err: any) => {
+              this.updateLoading(false);
+              this.postMessage({
+                action: 'payFail'
+              });
+            });
+        })
+        .catch(() => {
+          this.updateLoading(false);
+          this.postMessage({
+            action: 'payFail'
+          });
+        });
+    });
+  }
 
   // 用户中心控制面板
   private showCenter() {
@@ -351,7 +445,6 @@ export default class Scenes extends Vue {
     this.$data.center = true;
   }
   private centerAction({ action, params }: { action: string; params: any }) {
-    console.log(action, params);
     if (action === 'wxTip' && params) {
       if (!isWx) {
         const userInfo = this.$store.state.user.userInfo;
@@ -366,9 +459,12 @@ export default class Scenes extends Vue {
     } else if (action === 'account') {
       this.$data.center = false;
       this.$data.account = true;
+    } else if (action === 'logOut') {
+      this.$data.center = false;
+      this.$store.dispatch('user/logOut');
     }
   }
-  // 账号管理
+  /** 账户管理 */
   private showAccount() {
     this.$data.bindMobile = false;
     this.$data.psw = false;
@@ -382,31 +478,41 @@ export default class Scenes extends Vue {
     } else {
       this.$data.psw = true;
     }
-    console.log(action);
   }
   // 绑定手机号
   private mobileBind({ params }: { params: { mobile: string; code: string } }) {
     this.$data.accountActionType = 'bindMobile';
-    this.$store.dispatch('user/mobileBind', {
-      ...params
-    });
+    this.$store
+      .dispatch('user/mobileBind', {
+        ...params
+      })
+      .then(() => {
+        this.showAccount();
+      });
   }
   // 更新密码
   private changePassword({ action, params }: { action: string; params: any }) {
-    console.log(action, params);
     this.$data.accountActionType = action;
     if (action === 'mobile') {
-      return this.$store.dispatch('user/passwordReset', {
-        mobile: params.mobile,
-        code: params.code,
-        password: md5(params.password)
-      });
+      return this.$store
+        .dispatch('user/passwordReset', {
+          mobile: params.mobile,
+          code: params.code,
+          password: md5(params.password)
+        })
+        .then(() => {
+          this.showAccount();
+        });
     }
-    return this.$store.dispatch('user/passwordUpdate', {
-      old_password: md5(params.old_password),
-      password: md5(params.password),
-      re_password: md5(params.re_password)
-    });
+    return this.$store
+      .dispatch('user/passwordUpdate', {
+        old_password: md5(params.old_password),
+        password: md5(params.password),
+        re_password: md5(params.re_password)
+      })
+      .then(() => {
+        this.showAccount();
+      });
   }
 
   // lifecycles
@@ -428,11 +534,16 @@ export default class Scenes extends Vue {
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
   }
+  private errorCaptured(err: Error, vm: Comment, info: string) {
+    console.log(err, vm, info);
+  }
 }
 </script>
 <style lang="scss" scoped>
-.scenes {
+.scenes,
+#gameWindow {
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 </style>

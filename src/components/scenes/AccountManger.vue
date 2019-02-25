@@ -19,7 +19,7 @@
   </modal>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
+import { Vue, Component, Prop } from 'vue-property-decorator';
 import Modal from '../Modal.vue';
 import Icon from '../Icon.vue';
 @Component({
@@ -60,13 +60,12 @@ export default class HyAccountManger extends Vue {
     this.$emit('update:show', false);
   }
   // 切换控制面板
-  @Emit()
   private action(type: string) {
-    this.hide();
-    if (type === 'mobile' && !this.datas.user.mobile) {
-      return type;
+    if (type === 'mobile' && !!this.datas.user.mobile) {
+      return;
     }
-    return type;
+    this.hide();
+    this.$emit('action', type);
   }
 }
 </script>

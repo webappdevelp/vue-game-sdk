@@ -143,23 +143,16 @@ export default class HyScenesMobileLogin extends Vue {
     }
     this.$emit('submit', { action: 'mobile', params: { ...datas } });
   }
+
+  // lifecycles (谨慎使用 updated 钩子函数)
+  private updated() {
+    if (!this.show && JSON.stringify(this.$data.form) !== JSON.stringify(defaultForm)) {
+      this.$data.form = deepCopy(defaultForm);
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>
-.hy-modal {
-  position: fixed;
-  top: 50%;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: 280px;
-  padding: 0;
-  background-color: #fff;
-  transform: translate3d(0, -50%, 0);
-  border-radius: 6px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
 .hy-form {
   position: relative;
   padding: 0 20px 20px;

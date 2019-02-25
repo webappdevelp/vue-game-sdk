@@ -35,7 +35,10 @@ const actions = {
     );
     switch (action) {
       case 'fast':
-        fastReg(params && params.password)
+        fastReg({
+          password: params.password,
+          device: params.device
+        })
           .then((res: { data: any }) => {
             let { data } = res;
             data = data || {};
@@ -173,6 +176,7 @@ const actions = {
               { root: true }
             );
           });
+        break;
     }
   },
   // 登录游戏
@@ -255,14 +259,21 @@ const actions = {
       vip?: number;
     }
   ) => {
-    report(params).catch((err: { message: string }) => {
-      commit(
-        {
-          type: UPDATETOAST,
-          data: err.message
-        },
-        { root: true }
-      );
+    return new Promise((resolve, reject) => {
+      report(params)
+        .then(() => {
+          resolve();
+        })
+        .catch((err: { message: string }) => {
+          commit(
+            {
+              type: UPDATETOAST,
+              data: err.message
+            },
+            { root: true }
+          );
+          reject();
+        });
     });
   },
   // 退出登录
@@ -318,39 +329,42 @@ const actions = {
   // 获取控制中心相关数据
   getControlInfo: ({ state, commit }: { state: any; commit: any }) => {
     const { userInfo } = state;
-    getServiceInfo({
-      token: userInfo.token,
-      guid: userInfo.guid
-    })
-      .then((res: { data: { app: any; user: any } }) => {
-        const { app, user } = res.data;
-        commit({
-          type: UPDATEUSERINFO,
-          data: {
-            data: {
-              ...user
-            },
-            action: 'updated'
-          }
-        });
-        commit({
-          type: UPDATEUSERAPPINFO,
-          data: app
-        });
+    return new Promise(resolve => {
+      getServiceInfo({
+        token: userInfo.token,
+        guid: userInfo.guid
       })
-      .catch((err: { message: string }) => {
-        commit(
-          {
-            type: UPDATETOAST,
-            data: err.message
-          },
-          { root: true }
-        );
-      });
+        .then((res: { data: { app: any; user: any } }) => {
+          const { app, user } = res.data;
+          commit({
+            type: UPDATEUSERINFO,
+            data: {
+              data: {
+                ...user
+              },
+              action: userInfo.mobile !== user.mobile ? 'logined' : 'updated'
+            }
+          });
+          commit({
+            type: UPDATEUSERAPPINFO,
+            data: app
+          });
+          resolve();
+        })
+        .catch((err: { message: string }) => {
+          commit(
+            {
+              type: UPDATETOAST,
+              data: err.message
+            },
+            { root: true }
+          );
+        });
+    });
   },
   // 绑定手机号
   mobileBind: (
-    { state, commit }: { state: any; commit: any },
+    { state, commit, dispatch }: { state: any; commit: any; dispatch: any },
     params: { mobile: string; code: string }
   ) => {
     commit(
@@ -362,38 +376,44 @@ const actions = {
     );
     const { userInfo } = state;
     const { mobile, code } = params;
-    bindMobile({
-      token: userInfo.token,
-      guid: userInfo.guid,
-      mobile,
-      code
-    })
-      .then((res: { data: any }) => {
-        commit(
-          {
-            type: UPDATELOAD,
-            data: false
-          },
-          { root: true }
-        );
-        console.log(res.data);
+    return new Promise(resolve => {
+      bindMobile({
+        token: userInfo.token,
+        guid: userInfo.guid,
+        mobile,
+        code
       })
-      .catch((err: { message: string }) => {
-        commit(
-          {
-            type: UPDATELOAD,
-            data: false
-          },
-          { root: true }
-        );
-        commit(
-          {
-            type: UPDATETOAST,
-            data: err.message
-          },
-          { root: true }
-        );
-      });
+        .then(() => {
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          dispatch('getControlInfo').then(() => resolve());
+        })
+        .catch((err: { message: string }) => {
+          commit({
+            type: UPDATEUSERACTION,
+            data: 'bindMobile_error'
+          });
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          commit(
+            {
+              type: UPDATETOAST,
+              data: err.message
+            },
+            { root: true }
+          );
+        });
+    });
   },
   // 更新密码
   passwordUpdate: (
@@ -409,55 +429,137 @@ const actions = {
     );
     const { userInfo } = state;
     const { old_password, password, re_password } = params;
-    updatePassword({
-      token: userInfo.token,
-      guid: userInfo.guid,
-      old_password,
-      password,
-      re_password
-    })
-      .then((res: { data: any }) => {
-        commit(
-          {
-            type: UPDATELOAD,
-            data: false
-          },
-          { root: true }
-        );
-        const { data } = res;
-        commit({
-          type: UPDATEUSERINFO,
-          data: {
-            data: {
-              ...data
-            },
-            action: 'logined'
-          }
-        });
-        commit(
-          {
-            type: UPDATETOAST,
-            data: '修改成功'
-          },
-          { root: true }
-        );
+    return new Promise(resolve => {
+      updatePassword({
+        token: userInfo.token,
+        guid: userInfo.guid,
+        old_password,
+        password,
+        re_password
       })
-      .catch((err: { message: string }) => {
-        commit(
-          {
-            type: UPDATELOAD,
-            data: false
-          },
-          { root: true }
-        );
-        commit(
-          {
-            type: UPDATETOAST,
-            data: err.message
-          },
-          { root: true }
-        );
-      });
+        .then((res: { data: any }) => {
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          const { data } = res;
+          commit({
+            type: UPDATEUSERINFO,
+            data: {
+              data: {
+                ...data
+              },
+              action: 'logined'
+            }
+          });
+          commit(
+            {
+              type: UPDATETOAST,
+              data: '密码修改成功'
+            },
+            { root: true }
+          );
+          resolve();
+        })
+        .catch((err: { message: string }) => {
+          commit({
+            type: UPDATEUSERACTION,
+            data: 'updatePassword_error'
+          });
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          commit(
+            {
+              type: UPDATETOAST,
+              data: err.message
+            },
+            { root: true }
+          );
+        });
+    });
+  },
+  // 重置密码
+  passwordReset: (
+    { state, commit }: { state: any; commit: any },
+    params: {
+      mobile: string;
+      code: string;
+      password: string;
+    }
+  ) => {
+    commit(
+      {
+        type: UPDATELOAD,
+        data: true
+      },
+      { root: true }
+    );
+    const { userInfo } = state;
+    const { mobile, code, password } = params;
+    return new Promise(resolve => {
+      resetPassword({
+        token: userInfo.token,
+        guid: userInfo.guid,
+        mobile,
+        code,
+        password
+      })
+        .then((res: { data: any }) => {
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          const { data } = res;
+          commit({
+            type: UPDATEUSERINFO,
+            data: {
+              data: {
+                ...data
+              },
+              action: 'logined'
+            }
+          });
+          commit(
+            {
+              type: UPDATETOAST,
+              data: '密码修改成功'
+            },
+            { root: true }
+          );
+          resolve();
+        })
+        .catch((err: { message: string }) => {
+          commit({
+            type: UPDATEUSERACTION,
+            data: 'resetPassword_error'
+          });
+          commit(
+            {
+              type: UPDATELOAD,
+              data: false
+            },
+            { root: true }
+          );
+          commit(
+            {
+              type: UPDATETOAST,
+              data: err.message
+            },
+            { root: true }
+          );
+        });
+    });
   }
 };
 
