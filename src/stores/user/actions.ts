@@ -2,10 +2,10 @@ import {
   UPDATELOAD,
   UPDATETOAST,
   UPDATEUSERINFO,
-  UPDATEUSERACTION,
   UPDATEGAMERINFO,
   UPDATEUSERAPPINFO,
-  DELUSERINFO
+  DELUSERINFO,
+  UPDATEUSERACTION
 } from '@/stores/types';
 import {
   checkUser,
@@ -36,8 +36,7 @@ const actions = {
     switch (action) {
       case 'fast':
         fastReg({
-          password: params.password,
-          device: params.device
+          ...params
         })
           .then((res: { data: any }) => {
             let { data } = res;
@@ -210,11 +209,13 @@ const actions = {
         if (UserId) {
           commit({
             type: UPDATEGAMERINFO,
-            data: { userId: UserId, appId: params.app_id }
-          });
-          commit({
-            type: UPDATEUSERACTION,
-            data: 'gameLogined'
+            data: {
+              data: {
+                userId: UserId,
+                appId: params.app_id
+              },
+              action: 'logined'
+            }
           });
         }
         // 显示 loading
@@ -328,11 +329,13 @@ const actions = {
   },
   // 获取控制中心相关数据
   getControlInfo: ({ state, commit }: { state: any; commit: any }) => {
-    const { userInfo } = state;
+    const { userInfo, gamerInfo } = state;
     return new Promise(resolve => {
       getServiceInfo({
         token: userInfo.token,
-        guid: userInfo.guid
+        guid: userInfo.guid,
+        app: gamerInfo.appId,
+        app_id: gamerInfo.appId
       })
         .then((res: { data: { app: any; user: any } }) => {
           const { app, user } = res.data;
@@ -394,10 +397,6 @@ const actions = {
           dispatch('getControlInfo').then(() => resolve());
         })
         .catch((err: { message: string }) => {
-          commit({
-            type: UPDATEUSERACTION,
-            data: 'bindMobile_error'
-          });
           commit(
             {
               type: UPDATELOAD,
@@ -465,10 +464,6 @@ const actions = {
           resolve();
         })
         .catch((err: { message: string }) => {
-          commit({
-            type: UPDATEUSERACTION,
-            data: 'updatePassword_error'
-          });
           commit(
             {
               type: UPDATELOAD,
@@ -540,10 +535,6 @@ const actions = {
           resolve();
         })
         .catch((err: { message: string }) => {
-          commit({
-            type: UPDATEUSERACTION,
-            data: 'resetPassword_error'
-          });
           commit(
             {
               type: UPDATELOAD,

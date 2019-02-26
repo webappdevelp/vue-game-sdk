@@ -40,7 +40,7 @@ export function mobileLogin(params: {
 }
 
 // 一键注册
-export function fastReg(params: { password: string; device: string }) {
+export function fastReg(params: { password: string; device: string; }) {
   return sendPost('/user/onekeyRegister', {
     ...params
   });
@@ -54,7 +54,7 @@ export function getCode(params: { mobile: string; action: string }) {
 }
 
 // 获取服务信息
-export function getServiceInfo(params: { token: string; guid: string }) {
+export function getServiceInfo(params: { token: string; guid: string; app: string; app_id: string; }) {
   return sendPost('/hy/getServiceInfo', {
     ...params
   });

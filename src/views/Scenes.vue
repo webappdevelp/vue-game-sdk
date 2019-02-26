@@ -1,7 +1,19 @@
 <template>
-  <div class="scenes">
-    <p>{{ action }}</p>
-    <control @click="showCenter" :msg="controlRedDot"/>
+  <div
+    class="scenes"
+    ref="scenes"
+    @touchmove="touchMove"
+    @mousemove="touchMove"
+    @touchend="touchEnd"
+    @mouseup="touchEnd">
+    <div
+      class="hy-control"
+      ref="control"
+      @click="showCenter"
+      @touchstart="touchStart"
+      @mousedown="touchStart">
+      <badge v-if="controlRedDot !== ''" :msg="controlRedDot"></badge>
+    </div>
     <hy-center
       :show.sync="center"
       :userDatas="scenesDatas.user"
@@ -27,8 +39,6 @@
       @submit="changePassword"
     />
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
-    <loading :show="loading"/>
-    <toast :show.sync="toast.show" :msg="toast.msg"/>
     <iframe
       v-if="gameDatas.link !== ''"
       @load="gameInit"
@@ -47,7 +57,6 @@
 let hyPSMSource: any = null;
 let hyPSMOrigin: string = '';
 import { Vue, Component } from 'vue-property-decorator';
-import Control from '@/components/scenes/Control.vue';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
 import Login from '@/components/scenes/Login.vue';
@@ -55,22 +64,25 @@ import Mobile from '@/components/scenes/Mobile.vue';
 import Password from '@/components/scenes/Password.vue';
 import FastResult from '@/components/scenes/FastResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
+import Badge from '@/components/Badge.vue';
 import Loading from '@/components/Loading.vue';
 import Toast from '@/components/Toast.vue';
 import md5 from 'md5';
-import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION } from '@/stores/types';
+import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/stores/types';
 import { mapState } from 'vuex';
-import { cqApi } from '@/config';
+import { cqApi, gamerStorageName } from '@/config';
 import { get } from '@/utils/ts/fetch';
 import { deviceInit } from '@/api/u9api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getStorage, setStorage } from '@/utils/ts/storage';
+import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import { wxPayRequest } from '@/utils/ts/wx';
+import fixFormBug from '@/utils/ts/fixFormBug';
 
 @Component({
   components: {
-    Control,
+    Badge,
     HyCenter,
     AccountManger,
     Login,
@@ -83,7 +95,7 @@ import { wxPayRequest } from '@/utils/ts/wx';
     Toast
   },
   computed: {
-    ...mapState(['toast', 'loading']),
+    // ...mapState(['toast', 'loading']),
     ...mapState('user', {
       scenesDatas(state: any) {
         return {
@@ -107,11 +119,15 @@ import { wxPayRequest } from '@/utils/ts/wx';
       action(state: any) {
         if (this.$data.loginType === 'fast') {
           this.$data.login = false;
-          if (/gameLogined/i.test(state.action)) {
+          if (/logined/i.test(state.gamerAction)) {
             this.$data.fastRest = true;
           }
         }
-        if (/login|mobile|fast|auto/i.test(this.$data.loginType) && state.action === 'logined') {
+        if (
+          state.gamerAction !== 'logined' &&
+          state.userAction === 'logined' &&
+          /login|mobile|fast|auto/i.test(this.$data.loginType)
+        ) {
           // 登录平台后，获取控制中心小浮标状态
           this.$store.dispatch('user/getControlInfo');
           // 当平台登录的操作手柄存在时，自动登录游戏
@@ -120,11 +136,11 @@ import { wxPayRequest } from '@/utils/ts/wx';
           });
         }
         // 执行登录成功操作 playGame
-        if (/login|mobile/.test(this.$data.loginType) && state.action === 'gameLogined') {
+        if (/login|mobile/.test(this.$data.loginType) && state.gamerAction === 'logined') {
           this.playGame();
         }
         // 退出登录
-        if (state.action === 'logOut') {
+        if (state.userAction === 'logOut') {
           window.setTimeout(() => {
             window.location.reload();
           }, 2500);
@@ -140,7 +156,9 @@ export default class Scenes extends Vue {
       sdkOptions: {
         app: '',
         app_id: '',
-        openid: ''
+        openid: '',
+        device: '',
+        imei: ''
       },
       gameDatas: {
         id: '',
@@ -160,6 +178,11 @@ export default class Scenes extends Vue {
       wxTip: {
         show: false,
         msg: ''
+      },
+      moving: false,
+      move: {
+        x: 0,
+        y: 0
       }
     };
   }
@@ -176,6 +199,44 @@ export default class Scenes extends Vue {
       type: UPDATELOAD,
       data: show
     });
+  }
+  // 获取玩家登录信息
+  private getStorageGamerInfo(gid: string) {
+    const userInfo = this.$store.getters['user/userInfo'];
+    const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
+    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${gid}`);
+    let defaultGamerInfo: { appId: string; userId: string } = {
+      appId: gid,
+      userId: ''
+    };
+    if (storeGamerInfo) {
+      defaultGamerInfo = {
+        ...defaultGamerInfo,
+        ...storeGamerInfo
+      };
+      this.$store.commit({
+        type: `user/${UPDATEGAMERINFO}`,
+        data: {
+          data: {
+            ...defaultGamerInfo
+          }
+        }
+      });
+    } else if (cookieUserInfo) {
+      defaultGamerInfo = {
+        ...defaultGamerInfo,
+        userId: cookieUserInfo.userId
+      };
+      this.$store.commit({
+        type: `user/${UPDATEGAMERINFO}`,
+        data: {
+          data: {
+            ...defaultGamerInfo
+          },
+          action: 'logined'
+        }
+      });
+    }
   }
   // 获取页面初始化信息
   private getInitData() {
@@ -227,7 +288,6 @@ export default class Scenes extends Vue {
       console.log(`${action}：hyCpSDK -> hySDK successed`);
       switch (action) {
         case 'pay':
-          console.log(params);
           this.goPay({
             ...params
           });
@@ -289,7 +349,8 @@ export default class Scenes extends Vue {
         if (device) {
           this.$data.sdkOptions = {
             ...this.$data.sdkOptions,
-            device
+            device,
+            imei
           };
           setStorage('device', imei);
         }
@@ -346,7 +407,7 @@ export default class Scenes extends Vue {
     this.$data.loginType = '';
     this.postMessage({
       action: 'loginSuccess',
-      datas: this.$store.getters['user/getSDKUserInfo']
+      datas: this.$store.getters['user/sdkUserInfo']
     });
   }
   // 游戏内支付
@@ -358,8 +419,8 @@ export default class Scenes extends Vue {
     callback_url?: string;
     app_ext?: string;
   }) {
-    const userInfo = this.$store.getters['user/getUserInfo'];
-    const gamerInfo = this.$store.getters['user/getGamerInfo'];
+    const userInfo = this.$store.getters['user/userInfo'];
+    const gamerInfo = this.$store.getters['user/gamerInfo'];
     const { uid, guid } = userInfo;
     const { userId } = gamerInfo;
     const { amount, cpOrderId, body, subject, callback_url, app_ext } = params;
@@ -420,8 +481,9 @@ export default class Scenes extends Vue {
               });
             });
         })
-        .catch(() => {
+        .catch((err: { message: string }) => {
           this.updateLoading(false);
+          this.showToast(err.message);
           this.postMessage({
             action: 'payFail'
           });
@@ -514,6 +576,55 @@ export default class Scenes extends Vue {
         this.showAccount();
       });
   }
+  // 拖拽功能
+  private touchStart(event: any) {
+    let touch: any;
+    if (event.touches) {
+      touch = event.touches[0];
+    } else {
+      touch = event;
+    }
+    const { clientX, clientY } = touch;
+    this.$data.move = {
+      x: clientX - (this.$refs.control as HTMLElement).offsetLeft,
+      y: clientY - (this.$refs.control as HTMLElement).offsetTop
+    };
+    this.$data.moving = true;
+  }
+  private touchMove(event: any) {
+    if (this.$data.moving) {
+      let touch: any;
+      if (event.touches) {
+        touch = event.touches[0];
+      } else {
+        touch = event;
+      }
+      const { clientX, clientY } = touch;
+      const scenesHeight = (this.$refs.scenes as HTMLElement).clientHeight;
+      const scenesWidth = (this.$refs.scenes as HTMLElement).clientWidth;
+      let x = clientX - this.$data.move.x;
+      let y = clientY - this.$data.move.y;
+      const controlHeight = (this.$refs.control as HTMLElement).clientHeight;
+      const controlWidth = (this.$refs.control as HTMLElement).clientWidth;
+      const controlStyle = (this.$refs.control as HTMLElement).style;
+      if (x > (scenesWidth - controlWidth)) {
+        x = scenesWidth - controlWidth;
+      } else {
+        x = 0;
+      }
+      if (y > (scenesHeight - controlHeight)) {
+        y = scenesHeight - controlHeight;
+      } else {
+        y = 0;
+      }
+      controlStyle.left = `${clientX}px`;
+      controlStyle.top = `${clientY}px`;
+      event.preventDefault();
+    }
+  }
+  private touchEnd(){
+    this.$data.moving = false;
+  }
 
   // lifecycles
   private beforeCreate() {
@@ -529,13 +640,12 @@ export default class Scenes extends Vue {
       app_id: gid || '',
       openid: openid || ''
     };
+    this.getStorageGamerInfo(gid as string);
     this.getInitData();
   }
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
-  }
-  private errorCaptured(err: Error, vm: Comment, info: string) {
-    console.log(err, vm, info);
+    fixFormBug();
   }
 }
 </script>
@@ -545,5 +655,24 @@ export default class Scenes extends Vue {
   height: 100%;
   width: 100%;
   overflow: hidden;
+}
+.hy-control {
+  position: fixed;
+  z-index: 10;
+  top: 13%;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  will-change: auto;
+  background: url('../assets/scenes/control.png') center no-repeat;
+  background-size: contain;
+  transform: translate3d(20px, 0, 0);
+  .hy-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+  }
 }
 </style>

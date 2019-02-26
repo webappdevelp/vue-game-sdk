@@ -11,32 +11,40 @@ import {
 const mutations = {
   [UPDATEUSERINFO](
     state: any,
-    { data }: { data: { data: any; action: string } }
+    { data }: { data: { data: any; action?: string } }
   ) {
     state.userInfo = {
       ...state.userInfo,
       ...data.data
     };
-    state.action = data.action || '';
+    state.userAction = data.action || '';
     if (data.action === 'logined') {
       setStorage(userStorageName, state.userInfo, expireDays);
     }
   },
   // 更新操作手柄
   [UPDATEUSERACTION](state: any, { data }: { data: string }) {
-    state.action = data;
+    state.userAction = data;
   },
   // 更新游戏玩家信息
-  [UPDATEGAMERINFO](state: any, { data }: { data: { appId: string } }) {
+  [UPDATEGAMERINFO](
+    state: any,
+    {
+      data
+    }: { data: { data: { appId: string; userId: string }; action?: string } }
+  ) {
     state.gamerInfo = {
       ...state.gamerInfo,
-      ...data
+      ...data.data
     };
-    setStorage(
-      `${gamerStorageName}-${state.userInfo.uid}-${data.appId}`,
-      state.gamerInfo,
-      expireDays
-    );
+    state.gamerAction = data.action || '';
+    if (data.action === 'logined') {
+      setStorage(
+        `${gamerStorageName}-${state.userInfo.uid}-${data.data.appId}`,
+        state.gamerInfo,
+        expireDays
+      );
+    }
   },
   [UPDATEUSERAPPINFO](state: any, { data }: { data: any }) {
     state.userAppInfo = {
@@ -53,8 +61,10 @@ const mutations = {
       }
     }
     state.gamerInfo = {};
+    state.gamerAction = 'logOut';
     delStorage(userStorageName);
     state.userInfo = {};
+    state.userAction = 'logOut';
     state.userAppInfo = {};
   }
 };

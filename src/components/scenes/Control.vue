@@ -1,10 +1,17 @@
 <template>
-  <div class="hy-control" @click="action">
+  <div
+    class="hy-control"
+    ref="control"
+    @click="action"
+    @touchstart="moveAction"
+    @mousedown="moveAction"
+    :style="style"
+  >
     <badge v-if="msg !== ''" :msg="msg"></badge>
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import Badge from '../Badge.vue';
 @Component({
   components: {
@@ -18,29 +25,55 @@ export default class HyControl extends Vue {
   })
   private msg!: string;
 
+  private data() {
+    return {
+      move: false,
+      movePosition: {
+        x: 0,
+        y: 0
+      },
+      current: {
+        x: 0,
+        y: 0
+      }
+    };
+  }
+
+  get style() {
+    const { current } = this.$data;
+    return {
+      top: `${current.y}px`,
+      left: `${current.x}px`
+    };
+  }
+
   // methods
   private action() {
     this.$emit('click');
+  }
+  // 拖拽交互
+  private moveAction() {
+    this.$emit('movestart');
   }
 }
 </script>
 <style lang="scss" scoped>
 .hy-control {
-  position: absolute;
+  position: fixed;
   z-index: 10;
   top: 13%;
-  left: 0;
+  right: 0;
   width: 40px;
   height: 40px;
   overflow: hidden;
   will-change: auto;
   background: url('../../assets/scenes/control.png') center no-repeat;
   background-size: contain;
-  transform: translate3d(-20px, 0, 0);
+  transform: translate3d(20px, 0, 0);
   .hy-badge {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     text-align: center;
   }
 }
