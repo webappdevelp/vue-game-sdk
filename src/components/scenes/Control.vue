@@ -1,14 +1,5 @@
 <template>
-  <div
-    class="hy-control"
-    ref="control"
-    @click="action"
-    @touchstart="moveAction"
-    @mousedown="moveAction"
-    :style="style"
-  >
-    <badge v-if="msg !== ''" :msg="msg"></badge>
-  </div>
+  
 </template>
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';

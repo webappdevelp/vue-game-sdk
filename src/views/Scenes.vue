@@ -5,13 +5,15 @@
     @touchmove="touchMove"
     @mousemove="touchMove"
     @touchend="touchEnd"
-    @mouseup="touchEnd">
+    @mouseup="touchEnd"
+  >
     <div
       class="hy-control"
       ref="control"
       @click="showCenter"
       @touchstart="touchStart"
-      @mousedown="touchStart">
+      @mousedown="touchStart"
+    >
       <badge v-if="controlRedDot !== ''" :msg="controlRedDot"></badge>
     </div>
     <hy-center
@@ -56,6 +58,7 @@
 <script lang="ts">
 let hyPSMSource: any = null;
 let hyPSMOrigin: string = '';
+let opacityTimer: any = null;
 import { Vue, Component } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
@@ -180,10 +183,8 @@ export default class Scenes extends Vue {
         msg: ''
       },
       moving: false,
-      move: {
-        x: 0,
-        y: 0
-      }
+      movedX: 0,
+      movedY: 0
     };
   }
 
@@ -585,10 +586,17 @@ export default class Scenes extends Vue {
       touch = event;
     }
     const { clientX, clientY } = touch;
-    this.$data.move = {
-      x: clientX - (this.$refs.control as HTMLElement).offsetLeft,
-      y: clientY - (this.$refs.control as HTMLElement).offsetTop
-    };
+    const controlEl = this.$refs.control as HTMLElement;
+    /* this.$data.movedX = controlEl.offsetLeft;
+    this.$data.movedY = controlEl.offsetTop; */
+    if (opacityTimer) {
+      window.clearTimeout(opacityTimer);
+      opacityTimer = null;
+    }
+    const controlStyle = controlEl.style;
+    controlStyle.opacity = '1';
+    controlStyle.transition = 'unset';
+    controlStyle.webkitTransition = 'unset';
     this.$data.moving = true;
   }
   private touchMove(event: any) {
@@ -600,30 +608,104 @@ export default class Scenes extends Vue {
         touch = event;
       }
       const { clientX, clientY } = touch;
-      const scenesHeight = (this.$refs.scenes as HTMLElement).clientHeight;
-      const scenesWidth = (this.$refs.scenes as HTMLElement).clientWidth;
-      let x = clientX - this.$data.move.x;
-      let y = clientY - this.$data.move.y;
-      const controlHeight = (this.$refs.control as HTMLElement).clientHeight;
-      const controlWidth = (this.$refs.control as HTMLElement).clientWidth;
-      const controlStyle = (this.$refs.control as HTMLElement).style;
-      if (x > (scenesWidth - controlWidth)) {
-        x = scenesWidth - controlWidth;
-      } else {
-        x = 0;
-      }
-      if (y > (scenesHeight - controlHeight)) {
-        y = scenesHeight - controlHeight;
-      } else {
-        y = 0;
-      }
+      /* this.$data.movedX = clientX;
+      this.$data.movedY = clientY; */
+      const controlEl = this.$refs.control as HTMLElement;
+      const controlStyle = controlEl.style;
       controlStyle.left = `${clientX}px`;
       controlStyle.top = `${clientY}px`;
       event.preventDefault();
     }
   }
-  private touchEnd(){
+  private touchEnd() {
     this.$data.moving = false;
+    // const { movedX, movedY } = this.$data;
+    let left = 0;
+    let top = 0;
+    const scenesEl = this.$refs.scenes as HTMLElement;
+    const controlEl = this.$refs.control as HTMLElement;
+    const scenesHeight = scenesEl.clientHeight;
+    const scenesWidth = scenesEl.clientWidth;
+    const controlHeight = controlEl.clientHeight;
+    const controlWidth = controlEl.clientWidth;
+    const controlStyle = controlEl.style;
+    const badgeEl = controlEl.querySelector('.hy-badge') as HTMLElement;
+    const badgeStyle = badgeEl && badgeEl.style;
+    const offsetLeft = controlEl.offsetLeft;
+    const offsetTop = controlEl.offsetTop;
+    const difX = scenesWidth - offsetLeft - controlWidth;
+    const difY = scenesHeight - offsetTop - controlHeight;
+    const obj: any = {
+      left: offsetLeft,
+      top: offsetTop,
+      right: difX,
+      bottom: difY
+    };
+    const min = Math.min(obj.left, obj.top, obj.right, obj.bottom);
+    let position: string = '';
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && obj[key] === min) {
+        position = key;
+        switch (key) {
+          case 'left':
+            left = -20;
+            if (badgeStyle) {
+              badgeStyle.top = '0';
+              badgeStyle.right = '0';
+              badgeStyle.left = 'auto';
+              badgeStyle.margin = 'unset';
+            }
+            break;
+          case 'top':
+            top = -20;
+            if (badgeStyle) {
+              badgeStyle.left = '50%';
+              badgeStyle.bottom = '0';
+              badgeStyle.right = 'auto';
+              badgeStyle.top = 'auto';
+              badgeStyle.marginLeft = '-50%';
+            }
+            break;
+          case 'bottom':
+            top = scenesHeight - 20;
+            if (badgeStyle) {
+              badgeStyle.top = '0';
+              badgeStyle.left = '50%';
+              badgeStyle.right = 'auto';
+              badgeStyle.bottom = 'auto';
+              badgeStyle.marginLeft = '-50%';
+            }
+            break;
+          case 'right':
+          default:
+            left = scenesWidth - 20;
+            if (badgeStyle) {
+              badgeStyle.top = '0';
+              badgeStyle.left = '0';
+              badgeStyle.right = 'auto';
+              badgeStyle.bottom = 'auto';
+              badgeStyle.margin = 'unset';
+            }
+            break;
+        }
+      }
+    }
+    if (left !== 0) {
+      controlStyle.left = `${left}px`;
+    } else {
+      controlStyle.top = `${top}px`;
+    }
+    controlStyle.right = 'auto';
+    controlStyle.bottom = 'auto';
+    controlStyle.transition = 'all .3s ease';
+    controlStyle.webkitTransition = 'all .3s ease';
+    this.controlAutoOpacity();
+  }
+  // 小浮标自动半显示
+  private controlAutoOpacity() {
+    opacityTimer = window.setTimeout(() => {
+      (this.$refs.control as HTMLElement).style.opacity = '0.3';
+    }, 3000);
   }
 
   // lifecycles
@@ -634,10 +716,12 @@ export default class Scenes extends Vue {
     });
   }
   private created() {
-    const { gid, openid } = this.$route.query;
+    const { gid, openid, aid } = this.$route.query;
     this.$data.sdkOptions = {
       app: gid || '',
       app_id: gid || '',
+      aid: aid || '',
+      Aid: aid || '',
       openid: openid || ''
     };
     this.getStorageGamerInfo(gid as string);
@@ -646,6 +730,7 @@ export default class Scenes extends Vue {
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
     fixFormBug();
+    this.controlAutoOpacity();
   }
 }
 </script>
@@ -660,19 +745,20 @@ export default class Scenes extends Vue {
   position: fixed;
   z-index: 10;
   top: 13%;
-  right: 0;
+  right: -20px;
   width: 40px;
   height: 40px;
   overflow: hidden;
   will-change: auto;
   background: url('../assets/scenes/control.png') center no-repeat;
   background-size: contain;
-  transform: translate3d(20px, 0, 0);
+  transition: all .3s ease;
   .hy-badge {
     position: absolute;
     top: 0;
     left: 0;
     text-align: center;
+    transition: all .3s ease;
   }
 }
 </style>
