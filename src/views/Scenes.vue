@@ -59,6 +59,7 @@
 let hyPSMSource: any = null;
 let hyPSMOrigin: string = '';
 let controlOpacityTimer: any = null;
+const dwladsApps: string[] = ['10147'];
 import { Vue, Component } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
@@ -214,6 +215,7 @@ export default class Scenes extends Vue {
     return (
       sdkOptions.app !== '' &&
       sdkOptions.app !== '0' &&
+      dwladsApps.indexOf(sdkOptions.app) >= 0 &&
       sdkOptions.aid !== '' &&
       sdkOptions.aid !== '0' &&
       (deviceType === '' || deviceType === '0')
