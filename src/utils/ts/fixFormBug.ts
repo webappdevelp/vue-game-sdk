@@ -7,11 +7,12 @@ export default function fixFormBug() {
     document.addEventListener(
       'blur',
       () => {
-        document.scrollingElement &&
+        if (document.scrollingElement) {
           document.scrollingElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
           });
+        }
       },
       true
     );

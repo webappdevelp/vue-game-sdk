@@ -1,5 +1,5 @@
 <template>
-  <div class="hy-badge">{{ msg }}</div>
+  <div class="hy-badge" :style="customStyle">{{ msg }}</div>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
@@ -10,6 +10,13 @@ export default class HyBadge extends Vue {
     default: ''
   })
   private msg!: string;
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private customStyle!: object;
 }
 </script>
 <style>

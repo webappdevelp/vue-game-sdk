@@ -18,6 +18,6 @@
     "trailing-comma": false,
     "arrow-parens": false,
     "no-console": [true, "error"],
-    "no-reference": true
+    "no-reference": false
   }
 }

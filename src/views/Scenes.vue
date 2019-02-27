@@ -1,21 +1,19 @@
 <template>
-  <div
-    class="scenes"
-    ref="scenes"
-    @touchmove="touchMove"
-    @mousemove="touchMove"
-    @touchend="touchEnd"
-    @mouseup="touchEnd"
-  >
-    <div
-      class="hy-control"
-      ref="control"
+  <div class="scenes">
+    <hy-drag
+      :drag-style="controlDragStyle"
       @click="showCenter"
-      @touchstart="touchStart"
-      @mousedown="touchStart"
-    >
-      <badge v-if="controlRedDot !== ''" :msg="controlRedDot"></badge>
-    </div>
+      @drag-start="controlDragStart"
+      @drag-move="controlDragMove"
+      @drag-end="controlDragEnd">
+      <div class="hy-control">
+        <badge
+          v-if="controlRedDot !== ''"
+          :msg="controlRedDot"
+          :custom-style="controlBadgeStyle">
+        </badge>
+      </div>
+    </hy-drag>
     <hy-center
       :show.sync="center"
       :userDatas="scenesDatas.user"
@@ -41,6 +39,7 @@
       @submit="changePassword"
     />
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
+    <input type="hidden" name="userAction" :value="action">
     <iframe
       v-if="gameDatas.link !== ''"
       @load="gameInit"
@@ -58,7 +57,7 @@
 <script lang="ts">
 let hyPSMSource: any = null;
 let hyPSMOrigin: string = '';
-let opacityTimer: any = null;
+let controlOpacityTimer: any = null;
 import { Vue, Component } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
@@ -67,6 +66,7 @@ import Mobile from '@/components/scenes/Mobile.vue';
 import Password from '@/components/scenes/Password.vue';
 import FastResult from '@/components/scenes/FastResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
+import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
 import Loading from '@/components/Loading.vue';
 import Toast from '@/components/Toast.vue';
@@ -85,6 +85,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
 
 @Component({
   components: {
+    HyDrag,
     Badge,
     HyCenter,
     AccountManger,
@@ -148,7 +149,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
             window.location.reload();
           }, 2500);
         }
-        return state.action;
+        return state.userAction;
       }
     })
   }
@@ -182,6 +183,12 @@ export default class Scenes extends Vue {
         show: false,
         msg: ''
       },
+      controlDragStyle: {
+        zIndex: '10',
+        top: '13%',
+        right: '-20px'
+      },
+      controlBadgeStyle: {},
       moving: false,
       movedX: 0,
       movedY: 0
@@ -491,7 +498,6 @@ export default class Scenes extends Vue {
         });
     });
   }
-
   // 用户中心控制面板
   private showCenter() {
     // 判断是否登录平台
@@ -578,133 +584,127 @@ export default class Scenes extends Vue {
       });
   }
   // 拖拽功能
-  private touchStart(event: any) {
-    let touch: any;
-    if (event.touches) {
-      touch = event.touches[0];
-    } else {
-      touch = event;
-    }
-    const { clientX, clientY } = touch;
-    const controlEl = this.$refs.control as HTMLElement;
-    /* this.$data.movedX = controlEl.offsetLeft;
-    this.$data.movedY = controlEl.offsetTop; */
-    if (opacityTimer) {
-      window.clearTimeout(opacityTimer);
-      opacityTimer = null;
-    }
-    const controlStyle = controlEl.style;
-    controlStyle.opacity = '1';
-    controlStyle.transition = 'unset';
-    controlStyle.webkitTransition = 'unset';
-    this.$data.moving = true;
-  }
-  private touchMove(event: any) {
-    if (this.$data.moving) {
-      let touch: any;
-      if (event.touches) {
-        touch = event.touches[0];
-      } else {
-        touch = event;
-      }
-      const { clientX, clientY } = touch;
-      /* this.$data.movedX = clientX;
-      this.$data.movedY = clientY; */
-      const controlEl = this.$refs.control as HTMLElement;
-      const controlStyle = controlEl.style;
-      controlStyle.left = `${clientX}px`;
-      controlStyle.top = `${clientY}px`;
-      event.preventDefault();
+  private controlDragStart() {
+    const { controlDragStyle } = this.$data;
+    this.$data.controlDragStyle = {
+      ...controlDragStyle,
+      opacity: '1',
+      transition: 'unset',
+      webkitTransition: 'unset'
+    };
+    if (controlOpacityTimer) {
+      window.clearTimeout(controlOpacityTimer);
+      controlOpacityTimer = null;
     }
   }
-  private touchEnd() {
-    this.$data.moving = false;
-    // const { movedX, movedY } = this.$data;
-    let left = 0;
-    let top = 0;
-    const scenesEl = this.$refs.scenes as HTMLElement;
-    const controlEl = this.$refs.control as HTMLElement;
-    const scenesHeight = scenesEl.clientHeight;
-    const scenesWidth = scenesEl.clientWidth;
-    const controlHeight = controlEl.clientHeight;
-    const controlWidth = controlEl.clientWidth;
-    const controlStyle = controlEl.style;
-    const badgeEl = controlEl.querySelector('.hy-badge') as HTMLElement;
-    const badgeStyle = badgeEl && badgeEl.style;
-    const offsetLeft = controlEl.offsetLeft;
-    const offsetTop = controlEl.offsetTop;
-    const difX = scenesWidth - offsetLeft - controlWidth;
-    const difY = scenesHeight - offsetTop - controlHeight;
+  private controlDragMove(params: { movedX: number; movedY: number }) {
+    const { controlDragStyle } = this.$data;
+    const { movedX, movedY } = params;
+    this.$data.controlDragStyle = {
+      ...controlDragStyle,
+      left: `${movedX}px`,
+      top: `${movedY}px`
+    };
+  }
+  private controlDragEnd(params: { dragOffsetLeft: number; dragOffsetTop: number }) {
+    const { controlDragStyle, controlBadgeStyle } = this.$data;
+    const { dragOffsetLeft, dragOffsetTop } = params;
+    const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
+    const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
+    const difX = screenWidth - dragOffsetLeft;
+    const difY = screenHeight - dragOffsetTop;
     const obj: any = {
-      left: offsetLeft,
-      top: offsetTop,
+      left: dragOffsetLeft,
+      top: dragOffsetTop,
       right: difX,
       bottom: difY
     };
-    const min = Math.min(obj.left, obj.top, obj.right, obj.bottom);
-    let position: string = '';
+    const min = Math.min(dragOffsetLeft, dragOffsetTop, difX, difY);
+    let left = 0;
+    let top = 0;
     for (const key in obj) {
       if (obj.hasOwnProperty(key) && obj[key] === min) {
-        position = key;
         switch (key) {
           case 'left':
             left = -20;
-            if (badgeStyle) {
-              badgeStyle.top = '0';
-              badgeStyle.right = '0';
-              badgeStyle.left = 'auto';
-              badgeStyle.margin = 'unset';
-            }
+            this.$data.controlBadgeStyle = {
+              ...controlBadgeStyle,
+              top: '0',
+              right: '0',
+              left: 'auto',
+              bottom: 'auto',
+              margin: 'unset'
+            };
             break;
           case 'top':
             top = -20;
-            if (badgeStyle) {
-              badgeStyle.left = '50%';
-              badgeStyle.bottom = '0';
-              badgeStyle.right = 'auto';
-              badgeStyle.top = 'auto';
-              badgeStyle.marginLeft = '-50%';
-            }
+            this.$data.controlBadgeStyle = {
+              ...controlBadgeStyle,
+              left: '50%',
+              top: 'auto',
+              right: 'auto',
+              bottom: '0',
+              margin: '0 0 0 -50%'
+            };
             break;
           case 'bottom':
-            top = scenesHeight - 20;
-            if (badgeStyle) {
-              badgeStyle.top = '0';
-              badgeStyle.left = '50%';
-              badgeStyle.right = 'auto';
-              badgeStyle.bottom = 'auto';
-              badgeStyle.marginLeft = '-50%';
-            }
+            top = screenHeight - 20;
+            this.$data.controlBadgeStyle = {
+              ...controlBadgeStyle,
+              top: '0',
+              left: '50%',
+              right: 'auto',
+              bottom: 'auto',
+              margin: '0 0 0 -50%'
+            };
             break;
           case 'right':
-          default:
-            left = scenesWidth - 20;
-            if (badgeStyle) {
-              badgeStyle.top = '0';
-              badgeStyle.left = '0';
-              badgeStyle.right = 'auto';
-              badgeStyle.bottom = 'auto';
-              badgeStyle.margin = 'unset';
-            }
+            left = screenWidth - 20;
+            this.$data.controlBadgeStyle = {
+              ...controlBadgeStyle,
+              top: '0',
+              left: '0',
+              right: 'auto',
+              bottom: 'auto',
+              margin: 'unset'
+            };
             break;
         }
       }
     }
     if (left !== 0) {
-      controlStyle.left = `${left}px`;
+      this.$data.controlDragStyle = {
+        ...controlDragStyle,
+        left: `${left}px`,
+        right: 'auto',
+        bottom: 'auto',
+        opacity: '.3',
+        willChange: 'auto',
+        transition: 'all .3s ease',
+        webkitTransition: 'all .3s ease'
+      };
     } else {
-      controlStyle.top = `${top}px`;
+      this.$data.controlDragStyle = {
+        ...controlDragStyle,
+        top: `${top}px`,
+        right: 'auto',
+        bottom: 'auto',
+        opacity: '.3',
+        willChange: 'auto',
+        transition: 'all .3s ease',
+        webkitTransition: 'all .3s ease'
+      };
     }
-    controlStyle.right = 'auto';
-    controlStyle.bottom = 'auto';
-    controlStyle.transition = 'all .3s ease';
-    controlStyle.webkitTransition = 'all .3s ease';
     this.controlAutoOpacity();
   }
   // 小浮标自动半显示
   private controlAutoOpacity() {
-    opacityTimer = window.setTimeout(() => {
-      (this.$refs.control as HTMLElement).style.opacity = '0.3';
+    controlOpacityTimer = window.setTimeout(() => {
+      const { controlDragStyle } = this.$data;
+      this.$data.controlDragStyle = {
+        ...controlDragStyle,
+        opacity: '.3'
+      };
     }, 3000);
   }
 
@@ -742,23 +742,18 @@ export default class Scenes extends Vue {
   overflow: hidden;
 }
 .hy-control {
-  position: fixed;
-  z-index: 10;
-  top: 13%;
-  right: -20px;
+  position: relative;
   width: 40px;
   height: 40px;
   overflow: hidden;
-  will-change: auto;
   background: url('../assets/scenes/control.png') center no-repeat;
   background-size: contain;
-  transition: all .3s ease;
   .hy-badge {
     position: absolute;
     top: 0;
     left: 0;
     text-align: center;
-    transition: all .3s ease;
+    transition: all 0.3s ease;
   }
 }
 </style>
