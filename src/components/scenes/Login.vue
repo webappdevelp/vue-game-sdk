@@ -24,7 +24,7 @@
       </div>
       <div class="hy-form-footer">
         <btn text="手机号登录" color="green" @click="btnAction('mobile')"/>
-        <btn text="一键注册" color="purple" @click="btnAction('fast')"/>
+        <btn :text="fastBtnText" color="purple" @click="btnAction('fast')"/>
       </div>
     </form>
   </modal>
@@ -52,6 +52,11 @@ export default class HyScenesLogin extends Vue {
     default: false
   })
   private show!: boolean;
+  @Prop({
+    type: String,
+    default: '一键注册'
+  })
+  private fastBtnText!: string;
 
   private data() {
     return {

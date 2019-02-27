@@ -8,7 +8,8 @@ const state = {
     guid: '',
     username: '',
     mobile: '',
-    openid: ''
+    openid: '',
+    appid: ''
   },
   userAction: '',
   gamerInfo: {

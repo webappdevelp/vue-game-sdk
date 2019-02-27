@@ -54,7 +54,7 @@ export function getCode(params: { mobile: string; action: string }) {
 }
 
 // 获取服务信息
-export function getServiceInfo(params: { token: string; guid: string; app: string; app_id: string; }) {
+export function getServiceInfo(params: { token: string; guid: string; app: string; app_id: string; device: number }) {
   return sendPost('/hy/getServiceInfo', {
     ...params
   });

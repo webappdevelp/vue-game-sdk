@@ -9,7 +9,7 @@
         <a href="javascript:;" @click="action('account')">『账号管理』</a>
         <a href="javascript:;" @click="action('logOut')">『切换账号』</a>
       </li>
-      <li>平台账号：{{ datas.username }}</li>
+      <li>账号：{{ datas.username }}</li>
     </ul>
     <a class="wxtip" href="javascript:;" @click="action('wxTip')">边聊边玩</a>
   </div>

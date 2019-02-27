@@ -19,7 +19,7 @@ const mutations = {
     };
     state.userAction = data.action || '';
     if (data.action === 'logined') {
-      setStorage(userStorageName, state.userInfo, expireDays);
+      setStorage(`${userStorageName}${state.userInfo.appid || ''}`, state.userInfo, expireDays);
     }
   },
   // 更新操作手柄

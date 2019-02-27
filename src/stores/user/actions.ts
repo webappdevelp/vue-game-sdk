@@ -328,14 +328,16 @@ const actions = {
       });
   },
   // 获取控制中心相关数据
-  getControlInfo: ({ state, commit }: { state: any; commit: any }) => {
-    const { userInfo, gamerInfo } = state;
+  getControlInfo: ({ state, commit }: { state: any; commit: any }, params: { app: string; app_id: string; device: number }) => {
+    const { userInfo } = state;
+    const { app, app_id, device } = params;
     return new Promise(resolve => {
       getServiceInfo({
         token: userInfo.token,
         guid: userInfo.guid,
-        app: gamerInfo.appId,
-        app_id: gamerInfo.appId
+        app,
+        app_id,
+        device
       })
         .then((res: { data: { app: any; user: any } }) => {
           const { app, user } = res.data;
@@ -378,13 +380,11 @@ const actions = {
       { root: true }
     );
     const { userInfo } = state;
-    const { mobile, code } = params;
     return new Promise(resolve => {
       bindMobile({
         token: userInfo.token,
         guid: userInfo.guid,
-        mobile,
-        code
+        ...params
       })
         .then(() => {
           commit(
@@ -394,7 +394,7 @@ const actions = {
             },
             { root: true }
           );
-          dispatch('getControlInfo').then(() => resolve());
+          dispatch('getControlInfo', { ...params }).then(() => resolve());
         })
         .catch((err: { message: string }) => {
           commit(

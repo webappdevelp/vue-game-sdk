@@ -1,20 +1,25 @@
 <template>
-  <ul class="gifts">
-    <li>
-      <div>
-        <h3>大天使之剑H5新手礼包</h3>
-        <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
+  <div class="hy-gifts">
+    <div class="hy-gifts-empty">
+      暂无礼包相关信息哦~
+    </div>
+    <template v-if="!!datas.length">
+      <div class="hy-gift-item">
+        <div>
+          <h3>大天使之剑H5新手礼包</h3>
+          <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
+        </div>
+        <btn text="领取" />
       </div>
-      <btn text="领取" />
-    </li>
-    <li>
-      <div>
-        <h3>大天使之剑H5新手礼包</h3>
-        <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
+      <div class="hy-gift-item">
+        <div>
+          <h3>大天使之剑H5新手礼包</h3>
+          <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
+        </div>
+        <btn text="领取" />
       </div>
-      <btn text="领取" />
-    </li>
-  </ul>
+    </template>
+  </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
@@ -25,17 +30,28 @@ import Btn from '../../Btn.vue';
   }
 })
 export default class HyCenterGifts extends Vue {
-
+  private data() {
+    return {
+      datas: []
+    }
+  }
 }
 </script>
 <style lang="scss" scoped>
-.gifts {
+.hy-gifts {
   padding: 0 12px;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  li {
+  &-empty {
+    padding: 35% 0 0;
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+  }
+  .hy-gift-item {
     position: relative;
     padding: 12px 0 8px;
     border-bottom: 1px solid #f4f4f4;

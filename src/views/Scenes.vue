@@ -21,7 +21,7 @@
       @action="centerAction"
     />
     <account-manger :show.sync="account" :datas="scenesDatas" @action="accountAction"/>
-    <login :show.sync="login" @btn-action="loginBtnAction" @submit="goLogin"/>
+    <login :show.sync="login" :fast-btn-text="fastBtnText" @btn-action="loginBtnAction" @submit="goLogin"/>
     <mobile-login :show="mobile" @back="showLogin" @submit="goLogin"/>
     <fast-result :show="fastRest" :datas="scenesDatas.user" @click="playGame"/>
     <bind-mobile
@@ -39,6 +39,7 @@
       @submit="changePassword"
     />
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
+    <download-ads v-if="showDwlAds" @action="centerAction" />
     <input type="hidden" name="userAction" :value="action">
     <iframe
       v-if="gameDatas.link !== ''"
@@ -68,16 +69,20 @@ import FastResult from '@/components/scenes/FastResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
 import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
-import Loading from '@/components/Loading.vue';
-import Toast from '@/components/Toast.vue';
+import DownloadAds from '@/components/scenes/DownloadAds.vue';
 import md5 from 'md5';
-import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/stores/types';
+import {
+  UPDATETOAST,
+  UPDATELOAD,
+  UPDATEUSERACTION,
+  UPDATEGAMERINFO
+} from '@/stores/types';
 import { mapState } from 'vuex';
-import { cqApi, gamerStorageName } from '@/config';
+import { cqApi, gamerStorageName, accountType } from '@/config';
 import { get } from '@/utils/ts/fetch';
 import { deviceInit } from '@/api/u9api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
-import { getStorage, setStorage } from '@/utils/ts/storage';
+import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
 import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import { wxPayRequest } from '@/utils/ts/wx';
@@ -95,8 +100,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
     Password,
     FastResult,
     WxToBrowser,
-    Loading,
-    Toast
+    DownloadAds
   },
   computed: {
     // ...mapState(['toast', 'loading']),
@@ -123,7 +127,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
       action(state: any) {
         if (this.$data.loginType === 'fast') {
           this.$data.login = false;
-          if (/logined/i.test(state.gamerAction)) {
+          if (/logined/i.test(state.gamerAction) && !isWx) {
             this.$data.fastRest = true;
           }
         }
@@ -133,14 +137,20 @@ import fixFormBug from '@/utils/ts/fixFormBug';
           /login|mobile|fast|auto/i.test(this.$data.loginType)
         ) {
           // 登录平台后，获取控制中心小浮标状态
-          this.$store.dispatch('user/getControlInfo');
+          this.$store.dispatch('user/getControlInfo', {
+            ...this.$data.sdkOptions
+          });
           // 当平台登录的操作手柄存在时，自动登录游戏
           this.$store.dispatch('user/loginGame', {
             ...this.$data.sdkOptions
           });
         }
         // 执行登录成功操作 playGame
-        if (/login|mobile/.test(this.$data.loginType) && state.gamerAction === 'logined') {
+        if (
+          (/login|mobile|auto/.test(this.$data.loginType) ||
+            (/fast/.test(this.$data.loginType) && isWx)) &&
+          state.gamerAction === 'logined'
+        ) {
           this.playGame();
         }
         // 退出登录
@@ -161,8 +171,7 @@ export default class Scenes extends Vue {
         app: '',
         app_id: '',
         openid: '',
-        device: '',
-        imei: ''
+        device: ''
       },
       gameDatas: {
         id: '',
@@ -175,6 +184,7 @@ export default class Scenes extends Vue {
       mobile: false,
       fastRest: false,
       loginType: '',
+      loginFrom: '',
       account: false,
       bindMobile: false,
       psw: false,
@@ -189,12 +199,26 @@ export default class Scenes extends Vue {
         right: '-20px'
       },
       controlBadgeStyle: {},
-      moving: false,
-      movedX: 0,
-      movedY: 0
+      deviceType: ''
     };
   }
 
+  get fastBtnText() {
+    if (isWx && !!this.$data.loginFrom) {
+      return '微信登录';
+    }
+    return '一键注册';
+  }
+  get showDwlAds() {
+    const { sdkOptions, deviceType } = this.$data;
+    return (
+      sdkOptions.app !== '' &&
+      sdkOptions.app !== '0' &&
+      sdkOptions.aid !== '' &&
+      sdkOptions.aid !== '0' &&
+      (deviceType === '' || deviceType === '0')
+    );
+  }
   // methods
   private showToast(msg: string) {
     this.$store.commit({
@@ -212,7 +236,9 @@ export default class Scenes extends Vue {
   private getStorageGamerInfo(gid: string) {
     const userInfo = this.$store.getters['user/userInfo'];
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${gid}`);
+    const storeGamerInfo = getStorage(
+      `${gamerStorageName}-${userInfo.uid}-${gid}`
+    );
     let defaultGamerInfo: { appId: string; userId: string } = {
       appId: gid,
       userId: ''
@@ -244,6 +270,15 @@ export default class Scenes extends Vue {
           action: 'logined'
         }
       });
+    } else {
+      this.$store.commit({
+        type: `user/${UPDATEGAMERINFO}`,
+        data: {
+          data: {
+            ...defaultGamerInfo
+          }
+        }
+      });
     }
   }
   // 获取页面初始化信息
@@ -254,22 +289,25 @@ export default class Scenes extends Vue {
         gid: sdkOptions.app
       }
     })
-      .then((res: { data: { cp_origin: string; cp_url: string; title: string } }) => {
-        this.updateLoading(false);
-        let { data } = res;
-        data = data || {};
-        const { title, cp_origin, cp_url } = data;
-        if (!!title) {
-          document.title = title;
+      .then(
+        (res: {
+          data: { cp_origin: string; cp_url: string; title: string };
+        }) => {
+          let { data } = res;
+          data = data || {};
+          const { title, cp_origin, cp_url } = data;
+          if (!!title) {
+            document.title = title;
+          }
+          this.$data.gameDatas = {
+            id: sdkOptions.app,
+            name: title,
+            origin: 'http://test.h5.hygame.cc', //cp_origin,
+            link: 'http://test.h5.hygame.cc/sdk/cp.html' //cp_url
+          };
+          hyPSMOrigin = 'http://test.h5.hygame.cc';
         }
-        this.$data.gameDatas = {
-          id: sdkOptions.app,
-          name: title,
-          origin: 'http://m.xy.com', //cp_origin,
-          link: 'http://m.xy.com/src/psmSDK/cp.html' //cp_url
-        };
-        hyPSMOrigin = 'http://m.xy.com';
-      })
+      )
       .catch((err: { message: string }) => {
         this.updateLoading(false);
         this.showToast(err.message);
@@ -293,6 +331,7 @@ export default class Scenes extends Vue {
       let datas = JSON.parse(data);
       datas = datas || {};
       const { action, params } = datas;
+      const { sdkOptions, loginFrom } = this.$data;
       console.log(`${action}：hyCpSDK -> hySDK successed`);
       switch (action) {
         case 'pay':
@@ -304,7 +343,7 @@ export default class Scenes extends Vue {
           this.$store
             .dispatch('user/logReport', {
               ...params,
-              ...this.$data.sdkOptions
+              ...sdkOptions
             })
             .then(() => {
               this.postMessage({
@@ -324,11 +363,17 @@ export default class Scenes extends Vue {
         case 'login':
           // 判断是否登录平台
           if (!this.$store.getters['user/isLogin']) {
+            // 假如是在微信内，又有openid时，则直接使用openid进行账号登录
+            if (isWx && !loginFrom) {
+              return this.loginBtnAction('fast');
+            }
             return (this.$data.login = true);
           }
           this.$data.loginType = 'auto';
           // 登录平台后，获取控制中心小浮标状态
-          this.$store.dispatch('user/getControlInfo');
+          this.$store.dispatch('user/getControlInfo', {
+            ...sdkOptions
+          });
           // 判断是否登录游戏
           if (!this.$store.getters['user/isGameLogin']) {
             return this.$store.commit({
@@ -353,23 +398,28 @@ export default class Scenes extends Vue {
       imei: openid !== '' && openid !== '0' ? openid : deviceImei || '0'
     })
       .then((res: { data: { device: number; imei: string } }) => {
+        this.updateLoading(false);
         const { imei, device } = res.data;
         if (device) {
           this.$data.sdkOptions = {
             ...this.$data.sdkOptions,
-            device,
-            imei
+            device
           };
           setStorage('device', imei);
         }
+        // sdk 开始初始化通讯操作
+        this.postMessage({
+          action: 'init'
+        });
       })
       .catch((err: { message: string }) => {
+        this.updateLoading(false);
         this.showToast(err.message);
+        // sdk 开始初始化通讯操作
+        this.postMessage({
+          action: 'init'
+        });
       });
-    // sdk 开始初始化通讯操作
-    this.postMessage({
-      action: 'init'
-    });
   }
   // 登录面板按钮交互
   private loginBtnAction(action: string) {
@@ -406,7 +456,7 @@ export default class Scenes extends Vue {
   }
   // 登录游戏成功
   private playGame() {
-    if (this.$data.loginType !== 'fast') {
+    if (this.$data.loginType !== 'fast' || isWx) {
       this.showToast('登录成功');
     }
     this.$data.login = false;
@@ -514,6 +564,7 @@ export default class Scenes extends Vue {
     this.$data.center = true;
   }
   private centerAction({ action, params }: { action: string; params: any }) {
+    const { loginFrom } = this.$data;
     if (action === 'wxTip' && params) {
       if (!isWx) {
         const userInfo = this.$store.state.user.userInfo;
@@ -530,6 +581,11 @@ export default class Scenes extends Vue {
       this.$data.account = true;
     } else if (action === 'logOut') {
       this.$data.center = false;
+      if (isWx && !loginFrom) {
+        setStorage(accountType, 'username');
+      } else if (isWx) {
+        delStorage(accountType);
+      }
       this.$store.dispatch('user/logOut');
     }
   }
@@ -606,11 +662,16 @@ export default class Scenes extends Vue {
       top: `${movedY}px`
     };
   }
-  private controlDragEnd(params: { dragOffsetLeft: number; dragOffsetTop: number }) {
+  private controlDragEnd(params: {
+    dragOffsetLeft: number;
+    dragOffsetTop: number;
+  }) {
     const { controlDragStyle, controlBadgeStyle } = this.$data;
     const { dragOffsetLeft, dragOffsetTop } = params;
-    const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
-    const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
+    const screenWidth =
+      document.body.clientWidth || document.documentElement.clientWidth;
+    const screenHeight =
+      document.body.clientHeight || document.documentElement.clientHeight;
     const difX = screenWidth - dragOffsetLeft;
     const difY = screenHeight - dragOffsetTop;
     const obj: any = {
@@ -678,7 +739,6 @@ export default class Scenes extends Vue {
         left: `${left}px`,
         right: 'auto',
         bottom: 'auto',
-        opacity: '.3',
         willChange: 'auto',
         transition: 'all .3s ease',
         webkitTransition: 'all .3s ease'
@@ -689,7 +749,6 @@ export default class Scenes extends Vue {
         top: `${top}px`,
         right: 'auto',
         bottom: 'auto',
-        opacity: '.3',
         willChange: 'auto',
         transition: 'all .3s ease',
         webkitTransition: 'all .3s ease'
@@ -716,14 +775,16 @@ export default class Scenes extends Vue {
     });
   }
   private created() {
-    const { gid, openid, aid } = this.$route.query;
+    const { gid, openId, aid, device_type } = this.$route.query;
     this.$data.sdkOptions = {
       app: gid || '',
       app_id: gid || '',
       aid: aid || '',
       Aid: aid || '',
-      openid: openid || ''
+      openid: openId || ''
     };
+    this.$data.deviceType = device_type || '';
+    this.$data.loginFrom = getStorage(accountType);
     this.getStorageGamerInfo(gid as string);
     this.getInitData();
   }

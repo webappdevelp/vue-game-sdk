@@ -18,3 +18,6 @@ export const userStorageName = 'uu';
 
 // 存储的玩家信息所使用的键名
 export const gamerStorageName = 'gu';
+
+// 账号登录类型: 微信账号、普通账号
+export const accountType = 'account_type';

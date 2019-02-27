@@ -13,6 +13,7 @@
           <div class="center-info-box">
             <gifts v-if="currentTab === 1"/>
             <infos v-else-if="currentTab === 2"/>
+            <kefu v-else @action="action"/>
           </div>
         </div>
         <div class="hy-center-control">
@@ -34,6 +35,7 @@ import CenterHeader from './center/Header.vue';
 import Menus from './center/Menus.vue';
 import Gifts from './center/Gifts.vue';
 import Infos from './center/Infos.vue';
+import Kefu from './center/Kefu.vue';
 import Icon from '../Icon.vue';
 @Component({
   components: {
@@ -42,6 +44,7 @@ import Icon from '../Icon.vue';
     Menus,
     Gifts,
     Infos,
+    Kefu,
     Icon
   }
 })

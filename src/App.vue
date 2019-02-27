@@ -33,7 +33,7 @@ export default class App extends Vue {
   // methods
   private getStorageUserInfo(gid: string, openid: string) {
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeUserInfo = getStorage(userStorageName);
+    const storeUserInfo = getStorage(`${userStorageName}${gid}`);
     let defaultUserInfo: {
       token?: string;
       uid?: number;
@@ -41,13 +41,15 @@ export default class App extends Vue {
       username?: string;
       mobile?: string;
       openid?: string;
+      appid?: string;
     } = {
       token: '',
       uid: 0,
       guid: '',
       username: '',
       mobile: '',
-      openid
+      openid,
+      appid: gid
     };
 
     if (storeUserInfo) {
@@ -80,14 +82,24 @@ export default class App extends Vue {
           action: 'logined'
         }
       });
+    } else {
+      this.$store.commit({
+        type: `user/${UPDATEUSERINFO}`,
+        data: {
+          data: {
+            ...defaultUserInfo
+          }
+        }
+      });
     }
   }
   // lifecycles
   private created() {
     let gid = getQuery('gid');
-    let openid = getQuery('openid');
+    let openid = getQuery('openId');
     gid = gid || '0';
     openid = openid || '0';
+    console.log(gid);
     this.getStorageUserInfo(gid, openid);
   }
   private errorCaptured(err: Error, vm: Comment, info: string) {
