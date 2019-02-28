@@ -793,8 +793,10 @@ export default class Scenes extends Vue {
     };
     this.$data.deviceType = device_type || '';
     this.$data.loginFrom = getStorage(accountType);
-    this.getStorageGamerInfo(gid as string);
-    this.getInitData();
+    if (gid) {
+      this.getStorageGamerInfo(gid as string);
+      this.getInitData();
+    }
   }
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
