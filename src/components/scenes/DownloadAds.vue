@@ -118,8 +118,8 @@ export default class DownloadAds extends Vue {
       bottom: difY
     };
     const min = Math.min(dragOffsetLeft, dragOffsetTop, difX, difY);
-    let left = undefined;
-    let top = undefined;
+    let left;
+    let top;
     for (const key in obj) {
       if (obj.hasOwnProperty(key) && obj[key] === min) {
         switch (key) {

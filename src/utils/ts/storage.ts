@@ -35,8 +35,10 @@ export function getStorage(name: string) {
           delStorage(name);
           return null;
         }
-      } else {
+      } else if (value) {
         return value;
+      } else {
+        return datas;
       }
     }
     return null;

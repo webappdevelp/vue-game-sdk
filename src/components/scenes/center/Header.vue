@@ -1,9 +1,6 @@
 <template>
   <div class="hy-center-header">
-    <div
-      class="user-avatar"
-      style="background-image: url('https://thirdqq.qlogo.cn/qqapp/101338948/780DF1D16026306DE02AC9C0E77DD0E5/100')"
-    ></div>
+    <div class="user-avatar" :style="style"></div>
     <ul class="user-info">
       <li>
         <a href="javascript:;" @click="action('account')">『账号管理』</a>
@@ -25,6 +22,14 @@ export default class HyCenterHeader extends Vue {
     }
   })
   private datas!: object;
+
+  private data() {
+    return {
+      style: {
+        backgroundImage: `url(${require('../../../assets/logo.png')})`
+      }
+    };
+  }
 
   // methods
   @Emit()

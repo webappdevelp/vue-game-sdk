@@ -105,9 +105,14 @@ function createAjax(method: string) {
   ) => {
     let fetchParams: RequestInit = {
       method,
-      credentials: 'omit',
-      headers: setHeaders(params && params.headers)
+      credentials: 'omit'
     };
+    if (params && params.headers) {
+      fetchParams = {
+        ...fetchParams,
+        headers: setHeaders(params.headers)
+      };
+    }
     if (method === 'post') {
       fetchParams = {
         ...fetchParams,

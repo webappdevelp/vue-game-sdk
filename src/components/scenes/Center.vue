@@ -94,6 +94,7 @@ export default class HyScenesCenter extends Vue {
   bottom: 0;
   left: 0;
   width: 85%;
+  max-width: 450px;
   background: #fff;
 }
 .hy-center-current {

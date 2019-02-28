@@ -30,7 +30,7 @@ export default class HyCenterInfos extends Vue {
   private data() {
     return {
       datas: []
-    }
+    };
   }
 }
 </script>

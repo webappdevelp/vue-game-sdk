@@ -328,7 +328,10 @@ const actions = {
       });
   },
   // 获取控制中心相关数据
-  getControlInfo: ({ state, commit }: { state: any; commit: any }, params: { app: string; app_id: string; device: number }) => {
+  getControlInfo: (
+    { state, commit }: { state: any; commit: any },
+    params: { app: string; app_id: string; device: number }
+  ) => {
     const { userInfo } = state;
     const { app, app_id, device } = params;
     return new Promise(resolve => {

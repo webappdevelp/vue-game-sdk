@@ -33,7 +33,7 @@ export default class HyCenterGifts extends Vue {
   private data() {
     return {
       datas: []
-    }
+    };
   }
 }
 </script>
@@ -73,7 +73,8 @@ export default class HyCenterGifts extends Vue {
         left: 0;
         width: 15px;
         height: 15px;
-        background: url('../../../assets/scenes/center/icon-game-gift.png') center no-repeat;
+        background: url('../../../assets/scenes/center/icon-game-gift.png')
+          center no-repeat;
         background-size: contain;
         transform: translate3d(0, -50%, 0);
       }

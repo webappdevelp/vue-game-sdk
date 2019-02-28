@@ -63,9 +63,11 @@ const getters = {
     };
     gamerInfo: { userId: string };
   }) => {
-    if (gamerInfo.userId === undefined || !gamerInfo.userId) {
-      return null;
-    }
+    /* if (gamerInfo.userId === undefined || !gamerInfo.userId) {
+      return {
+
+      };
+    } */
     return {
       hyUid: userInfo.uid,
       channelUserId: userInfo.guid,

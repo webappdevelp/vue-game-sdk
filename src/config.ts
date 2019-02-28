@@ -8,7 +8,7 @@ export const api = '//apis.longqihuyu.com';
 export const u9Api = '//u9phps.longqihuyu.com';
 
 // cq 接口
-export const cqApi = 'http://testcq.zhihuigu168.com';
+export const cqApi = '//cq.zhihuigu168.com';
 
 // 数据存储时间(天)
 export const expireDays = 365;

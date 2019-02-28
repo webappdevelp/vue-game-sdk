@@ -41,6 +41,7 @@
     />
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
     <download-ads v-if="showDwlAds" @action="centerAction" />
+    <hy-error v-if="!showControlDrag" msg="您访问的链接出错了哦~" />
     <input type="hidden" name="userAction" :value="action">
     <iframe
       v-if="gameDatas.link !== ''"
@@ -72,6 +73,7 @@ import WxToBrowser from '@/components/WxToBrowserTip.vue';
 import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
 import DownloadAds from '@/components/scenes/DownloadAds.vue';
+import HyError from '@/components/ErrorTips.vue';
 import md5 from 'md5';
 import {
   UPDATETOAST,
@@ -102,7 +104,8 @@ import fixFormBug from '@/utils/ts/fixFormBug';
     Password,
     FastResult,
     WxToBrowser,
-    DownloadAds
+    DownloadAds,
+    HyError
   },
   computed: {
     // ...mapState(['toast', 'loading']),
@@ -121,7 +124,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
         };
       },
       controlRedDot(state: any) {
-        if (state.userInfo.uid && !state.userInfo.mobile) {
+        if (!!state.userInfo.uid && !state.userInfo.mobile) {
           return '1';
         }
         return '';
@@ -138,10 +141,6 @@ import fixFormBug from '@/utils/ts/fixFormBug';
           state.userAction === 'logined' &&
           /login|mobile|fast|auto/i.test(this.$data.loginType)
         ) {
-          // 登录平台后，获取控制中心小浮标状态
-          this.$store.dispatch('user/getControlInfo', {
-            ...this.$data.sdkOptions
-          });
           // 当平台登录的操作手柄存在时，自动登录游戏
           this.$store.dispatch('user/loginGame', {
             ...this.$data.sdkOptions
@@ -310,10 +309,10 @@ export default class Scenes extends Vue {
           this.$data.gameDatas = {
             id: sdkOptions.app,
             name: title,
-            origin: 'http://test.h5.hygame.cc', //cp_origin,
-            link: 'http://test.h5.hygame.cc/sdk/cp.html' //cp_url
+            origin: cp_origin,
+            link: cp_url
           };
-          hyPSMOrigin = 'http://test.h5.hygame.cc';
+          hyPSMOrigin = cp_origin;
         }
       )
       .catch((err: { message: string }) => {
@@ -336,21 +335,33 @@ export default class Scenes extends Vue {
   private dispatchMessage(e: MessageEvent) {
     const { origin, data } = e;
     if (origin === hyPSMOrigin) {
-      let datas = JSON.parse(data);
-      datas = datas || {};
-      const { action, params } = datas;
+      let cpDatas = JSON.parse(data);
+      cpDatas = cpDatas || {};
+      const { action, datas } = cpDatas;
       const { sdkOptions, loginFrom } = this.$data;
       console.log(`${action}：hyCpSDK -> hySDK successed`);
       switch (action) {
         case 'pay':
           this.goPay({
-            ...params
+            cpOrderId: datas.cpOrderId || '',
+            amount: datas.amount || 0,
+            body: datas.productDetail || '',
+            subject: datas.productName || '',
+            callback_url: datas.callBackUrl || '',
+            app_ext: datas.appExt || ''
           });
           break;
         case 'roleReport':
           this.$store
             .dispatch('user/logReport', {
-              ...params,
+              role_id: datas.roleId || 0,
+              role_level: datas.roleLevel || 0,
+              role_name: datas.roleName || '',
+              zone_id: datas.zoneId,
+              zone_name: datas.zoneName,
+              balance: datas.balance || 0,
+              party_name: datas.partyName || '',
+              vip: datas.vip || 0,
               ...sdkOptions
             })
             .then(() => {
@@ -368,6 +379,26 @@ export default class Scenes extends Vue {
           this.$store.dispatch('user/logOut');
           break;
         case 'initSuccess':
+          if (isWx) {
+            // 判断是否登录平台
+            if (!this.$store.getters['user/isLogin']) {
+              // 假如是在微信内，又有openid时，则直接使用openid进行账号登录
+              if (isWx && !loginFrom) {
+                return this.loginBtnAction('fast');
+              }
+              return (this.$data.login = true);
+            }
+            this.$data.loginType = 'auto';
+            // 判断是否登录游戏
+            if (!this.$store.getters['user/isGameLogin']) {
+              return this.$store.commit({
+                type: `user/${UPDATEUSERACTION}`,
+                data: 'logined'
+              });
+            }
+            this.playGame();
+          }
+          break;
         case 'login':
           // 判断是否登录平台
           if (!this.$store.getters['user/isLogin']) {
@@ -378,10 +409,6 @@ export default class Scenes extends Vue {
             return (this.$data.login = true);
           }
           this.$data.loginType = 'auto';
-          // 登录平台后，获取控制中心小浮标状态
-          this.$store.dispatch('user/getControlInfo', {
-            ...sdkOptions
-          });
           // 判断是否登录游戏
           if (!this.$store.getters['user/isGameLogin']) {
             return this.$store.commit({
@@ -400,10 +427,11 @@ export default class Scenes extends Vue {
     // 游戏加载成功后即开始设备初始化操作
     const { openid } = this.$data.sdkOptions;
     const deviceImei = getStorage('device');
+    const storageImei = (deviceImei && deviceImei.imei) || '0';
     deviceInit({
       ...this.$data.sdkOptions,
       brand_desc: openid === '' || openid === '0' ? '' : '公众号',
-      imei: openid !== '' && openid !== '0' ? openid : deviceImei || '0'
+      imei: openid !== '' && openid !== '0' ? openid : storageImei
     })
       .then((res: { data: { device: number; imei: string } }) => {
         this.updateLoading(false);
@@ -413,11 +441,14 @@ export default class Scenes extends Vue {
             ...this.$data.sdkOptions,
             device
           };
-          setStorage('device', imei);
+          if (!(deviceImei && deviceImei.imei)) {
+            setStorage('device', { imei });
+          }
         }
         // sdk 开始初始化通讯操作
         this.postMessage({
-          action: 'init'
+          action: 'init',
+          datas: this.$store.getters['user/sdkUserInfo']
         });
       })
       .catch((err: { message: string }) => {
@@ -471,6 +502,10 @@ export default class Scenes extends Vue {
     this.$data.mobile = false;
     this.$data.fastRest = false;
     this.$data.loginType = '';
+    // 登录平台后，获取控制中心小浮标状态
+    this.$store.dispatch('user/getControlInfo', {
+      ...this.$data.sdkOptions
+    });
     this.postMessage({
       action: 'loginSuccess',
       datas: this.$store.getters['user/sdkUserInfo']
@@ -482,7 +517,7 @@ export default class Scenes extends Vue {
     amount: number;
     body: string;
     subject: string;
-    callback_url?: string;
+    callback_url: string;
     app_ext?: string;
   }) {
     const userInfo = this.$store.getters['user/userInfo'];
@@ -490,6 +525,7 @@ export default class Scenes extends Vue {
     const { uid, guid } = userInfo;
     const { userId } = gamerInfo;
     const { amount, cpOrderId, body, subject, callback_url, app_ext } = params;
+
     this.updateLoading(true);
     u9Pay({
       uid: userInfo.uid,
@@ -502,59 +538,64 @@ export default class Scenes extends Vue {
       AppExt: app_ext,
       Ext: app_ext,
       ...this.$data.sdkOptions
-    }).then((res: { OrderId: string | undefined }) => {
-      const { OrderId } = res;
-      if (!isWx) {
-        return apiPay({
-          u9uid: userId,
+    })
+      .then((res: { OrderId: string | undefined }) => {
+        const { OrderId } = res;
+        if (!isWx) {
+          return apiPay({
+            u9uid: userId,
+            guid: userInfo.guid,
+            ry_device_id: this.$data.sdkOptions.device,
+            app_order_id: OrderId || '',
+            amount,
+            body,
+            subject,
+            ext: app_ext,
+            app_ext,
+            callback_url,
+            ...this.$data.sdkOptions
+          });
+        }
+        wxPay({
           guid: userInfo.guid,
           ry_device_id: this.$data.sdkOptions.device,
+          openid: this.$data.sdkOptions.openid,
           app_order_id: OrderId || '',
           amount,
           body,
           subject,
           ext: app_ext,
           app_ext,
-          callback_url,
-          ...this.$data.sdkOptions
-        });
-      }
-      wxPay({
-        guid: userInfo.guid,
-        ry_device_id: this.$data.sdkOptions.device,
-        openid: this.$data.sdkOptions.openid,
-        app_order_id: OrderId || '',
-        amount,
-        body,
-        subject,
-        ext: app_ext,
-        app_ext,
-        callback_url
-      })
-        .then((rest: { data: { pay_info: any } }) => {
-          const { pay_info } = rest.data;
-          wxPayRequest(pay_info)
-            .then(() => {
-              this.updateLoading(false);
-              this.postMessage({
-                action: 'paySuccess'
-              });
-            })
-            .catch((err: any) => {
-              this.updateLoading(false);
-              this.postMessage({
-                action: 'payFail'
-              });
-            });
+          callback_url
         })
-        .catch((err: { message: string }) => {
-          this.updateLoading(false);
-          this.showToast(err.message);
-          this.postMessage({
-            action: 'payFail'
+          .then((rest: { data: { pay_info: any } }) => {
+            const { pay_info } = rest.data;
+            wxPayRequest(pay_info)
+              .then(() => {
+                this.updateLoading(false);
+                this.postMessage({
+                  action: 'paySuccess'
+                });
+              })
+              .catch((err: any) => {
+                this.updateLoading(false);
+                this.postMessage({
+                  action: 'payFail'
+                });
+              });
+          })
+          .catch((err: { message: string }) => {
+            this.updateLoading(false);
+            this.showToast(err.message);
+            this.postMessage({
+              action: 'payFail'
+            });
           });
-        });
-    });
+      })
+      .catch((err: { message: string }) => {
+        this.updateLoading(false);
+        this.showToast(err.message);
+      });
   }
   // 用户中心控制面板
   private showCenter() {
@@ -770,7 +811,7 @@ export default class Scenes extends Vue {
       const { controlDragStyle } = this.$data;
       this.$data.controlDragStyle = {
         ...controlDragStyle,
-        opacity: '.3'
+        opacity: '.45'
       };
     }, 3000);
   }
@@ -795,22 +836,59 @@ export default class Scenes extends Vue {
     this.$data.loginFrom = getStorage(accountType);
     if (gid) {
       this.getStorageGamerInfo(gid as string);
-      this.getInitData();
+      try {
+        this.getInitData();
+      } catch (err) {
+        alert(err.message);
+      }
+    } else {
+      this.updateLoading(false);
     }
   }
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
+    window.addEventListener(
+      'resize',
+      () => {
+        this.$data.controlDragStyle = {
+          zIndex: '10',
+          top: '13%',
+          right: '-20px',
+          opacity: '.45'
+        };
+        this.$data.controlBadgeStyle = {
+          top: '0',
+          left: '0',
+          right: 'auto',
+          bottom: 'auto',
+          margin: 'unset'
+        };
+      },
+      false
+    );
     fixFormBug();
     this.controlAutoOpacity();
   }
 }
 </script>
+<style lang="scss">
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+</style>
+
 <style lang="scss" scoped>
 .scenes,
 #gameWindow {
   height: 100%;
   width: 100%;
   overflow: hidden;
+}
+.hy-error {
+  padding-top: 50%;
 }
 .hy-control {
   position: relative;

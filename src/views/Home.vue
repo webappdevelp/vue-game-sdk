@@ -66,9 +66,18 @@ export default class Home extends Vue {
     dragOffsetTop: number;
   }) {
     const { dragStyle } = this.$data;
-    const { movedX, movedY, dragWidth, dragHeight, dragOffsetLeft, dragOffsetTop } = params;
-    const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
-    const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
+    const {
+      movedX,
+      movedY,
+      dragWidth,
+      dragHeight,
+      dragOffsetLeft,
+      dragOffsetTop
+    } = params;
+    const screenWidth =
+      document.body.clientWidth || document.documentElement.clientWidth;
+    const screenHeight =
+      document.body.clientHeight || document.documentElement.clientHeight;
     const difX = screenWidth - dragOffsetLeft;
     const difY = screenHeight - dragOffsetTop;
     const obj: any = {
@@ -80,7 +89,7 @@ export default class Home extends Vue {
     const min = Math.min(dragOffsetLeft, dragOffsetTop, difX, difY);
     let left = 0;
     let top = 0;
-    for(const key in obj) {
+    for (const key in obj) {
       if (obj.hasOwnProperty(key) && obj[key] === min) {
         switch (key) {
           case 'left':
@@ -108,7 +117,7 @@ export default class Home extends Vue {
         willChange: 'auto',
         transition: 'all .3s ease',
         webkitTransition: 'all .3s ease'
-      }
+      };
     } else {
       this.$data.dragStyle = {
         ...dragStyle,
@@ -119,10 +128,9 @@ export default class Home extends Vue {
         willChange: 'auto',
         transition: 'all .3s ease',
         webkitTransition: 'all .3s ease'
-      }
+      };
     }
   }
-
 }
 </script>
 <style lang="scss" scoped>
