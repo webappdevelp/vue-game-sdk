@@ -1,6 +1,7 @@
 <template>
   <div class="scenes">
     <hy-drag
+      v-if="showControlDrag"
       :drag-style="controlDragStyle"
       @click="showCenter"
       @drag-start="controlDragStart"
@@ -204,6 +205,11 @@ export default class Scenes extends Vue {
     };
   }
 
+  get showControlDrag() {
+    const { sdkOptions } = this.$data;
+    const { app } = sdkOptions;
+    return app !== '' && app !== '0';
+  }
   get fastBtnText() {
     if (isWx && !!this.$data.loginFrom) {
       return '微信登录';
