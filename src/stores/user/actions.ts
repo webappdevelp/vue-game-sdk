@@ -159,7 +159,7 @@ const actions = {
                 );
               });
           })
-          .catch((err: { message: string }) => {
+          .catch((err) => {
             commit(
               {
                 type: UPDATELOAD,
@@ -170,7 +170,7 @@ const actions = {
             commit(
               {
                 type: UPDATETOAST,
-                data: err.message
+                data: '账号不存在'
               },
               { root: true }
             );

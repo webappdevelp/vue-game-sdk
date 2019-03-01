@@ -6,7 +6,8 @@
       @click="showCenter"
       @drag-start="controlDragStart"
       @drag-move="controlDragMove"
-      @drag-end="controlDragEnd">
+      @drag-end="controlDragEnd"
+      @resize="controlDragResize">
       <div class="hy-control">
         <badge
           v-if="controlRedDot !== ''"
@@ -89,7 +90,7 @@ import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
 import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
-import { wxPayRequest } from '@/utils/ts/wx';
+import { wxPayRequest, initWXJSSDK, wxSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
 
 @Component({
@@ -303,9 +304,9 @@ export default class Scenes extends Vue {
           let { data } = res;
           data = data || {};
           const { title, cp_origin, cp_url } = data;
-          if (!!title) {
+          /* if (!!title) {
             document.title = title;
-          }
+          } */
           this.$data.gameDatas = {
             id: sdkOptions.app,
             name: title,
@@ -570,7 +571,17 @@ export default class Scenes extends Vue {
         })
           .then((rest: { data: { pay_info: any } }) => {
             const { pay_info } = rest.data;
-            wxPayRequest(pay_info)
+            wxSDKPay(pay_info)
+              .then((payres: any) => {
+                alert(JSON.stringify(payres));
+              })
+              .catch(() => {
+                this.updateLoading(false);
+                this.postMessage({
+                  action: 'payFail'
+                });
+              });
+            /* wxPayRequest(pay_info)
               .then(() => {
                 this.updateLoading(false);
                 this.postMessage({
@@ -582,7 +593,7 @@ export default class Scenes extends Vue {
                 this.postMessage({
                   action: 'payFail'
                 });
-              });
+              }); */
           })
           .catch((err: { message: string }) => {
             this.updateLoading(false);
@@ -805,6 +816,21 @@ export default class Scenes extends Vue {
     }
     this.controlAutoOpacity();
   }
+  private controlDragResize() {
+    this.$data.controlDragStyle = {
+      zIndex: '10',
+      top: '13%',
+      right: '-20px',
+      opacity: '.45'
+    };
+    this.$data.controlBadgeStyle = {
+      top: '0',
+      left: '0',
+      right: 'auto',
+      bottom: 'auto',
+      margin: 'unset'
+    };
+  }
   // 小浮标自动半显示
   private controlAutoOpacity() {
     controlOpacityTimer = window.setTimeout(() => {
@@ -813,7 +839,7 @@ export default class Scenes extends Vue {
         ...controlDragStyle,
         opacity: '.45'
       };
-    }, 3000);
+    }, 5000);
   }
 
   // lifecycles
@@ -847,27 +873,22 @@ export default class Scenes extends Vue {
   }
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
-    window.addEventListener(
-      'resize',
-      () => {
-        this.$data.controlDragStyle = {
-          zIndex: '10',
-          top: '13%',
-          right: '-20px',
-          opacity: '.45'
-        };
-        this.$data.controlBadgeStyle = {
-          top: '0',
-          left: '0',
-          right: 'auto',
-          bottom: 'auto',
-          margin: 'unset'
-        };
-      },
-      false
-    );
     fixFormBug();
     this.controlAutoOpacity();
+    // 设置分享
+    const { gid } = this.$route.query;
+    initWXJSSDK({
+      title: '梦幻逍遥游',
+      desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
+      link: `${window.location.origin}/user/scenes?gid=${gid}`,
+      imgUrl: `${
+        window.location.origin
+      }${require('../assets/shareicon/xymy.png')}`
+    }).then((res: any) => {
+      this.postMessage({
+        action: 'shareComplete'
+      });
+    });
   }
 }
 </script>

@@ -102,6 +102,13 @@ export default class HyDrag extends Vue {
     document.addEventListener('mousemove', drag.touchMove, { passive: false });
     document.addEventListener('touchend', drag.touchEnd, false);
     document.addEventListener('mouseup', drag.touchEnd, false);
+    window.addEventListener(
+      'resize',
+      () => {
+        drag.$emit('resize');
+      },
+      false
+    );
   }
   private destoryed() {
     const drag = this;

@@ -62,7 +62,7 @@ const mutations = {
     }
     state.gamerInfo = {};
     state.gamerAction = 'logOut';
-    delStorage(userStorageName);
+    delStorage(`${userStorageName}${state.userInfo.appid || ''}`);
     state.userInfo = {};
     state.userAction = 'logOut';
     state.userAppInfo = {};

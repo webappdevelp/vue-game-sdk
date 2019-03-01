@@ -1,5 +1,5 @@
 <template>
-  <div class="xxy-gift">
+  <div class="xxy-gift" ref="xxy" :style="style">
     <img :src="require('../../assets/actions/xiaoyaoyou/bg.jpg')" />
     <div class="card">{{ card }}</div>
     <div class="get" @click="getCard">点击领取</div>
@@ -16,6 +16,7 @@ import { post } from '@/utils/ts/fetch';
 import { cqApi } from '@/config';
 import { deviceInit } from '@/api/u9api';
 import { getStorage, setStorage } from '@/utils/ts/storage';
+import isWx from '@/utils/ts/device/isWx';
 let lock: boolean = false;
 
 @Component({
@@ -35,6 +36,9 @@ let lock: boolean = false;
 export default class XiaoyaoyouGift extends Vue {
   private data() {
     return {
+      style: {
+        fontSize: '100px'
+      },
       sdkOptions: {
         app: '',
         app_id: '',
@@ -125,27 +129,43 @@ export default class XiaoyaoyouGift extends Vue {
         this.showToast(err.message);
       });
   }
-
+  private resetFontSize() {
+    let screenWidth = (this.$refs.xxy as HTMLElement).clientWidth;
+    screenWidth = screenWidth > 414 ? 414 : screenWidth;
+    const fontSize = (screenWidth / 375) * 100;
+    this.$data.style = {
+      fontSize: `${fontSize}px`
+    };
+  }
   // lifecycle
   private created() {
-    document.title = '梦幻逍遥游';
     const { openId, gid } = this.$route.query;
-    const { sdkOptions } = this.$data;
+    const { sdkOptions, style } = this.$data;
     this.$data.sdkOptions = {
       ...sdkOptions,
       app: gid,
       app_id: gid,
       openid: openId
     };
-    this.init();
+    if (!isWx) {
+      this.showToast('请使在微信内打开哦');
+    } else {
+      this.init();
+    }
+  }
+  private mounted() {
+    this.resetFontSize();
+    window.addEventListener('resize', this.resetFontSize, false);
   }
 }
 </script>
 <style lang="scss" scoped>
 .xxy-gift {
   position: relative;
+  margin: 0 auto;
   height: auto;
   width: 100%;
+  max-width: 414px;
   img {
     display: block;
     width: 100%;
@@ -156,16 +176,16 @@ export default class XiaoyaoyouGift extends Vue {
   .tips {
     position: absolute;
     z-index: 2;
-    top: 366px;
+    top: 3.66em;
   }
   .card {
     left: 50%;
-    top: 366px;
-    width: 192px;
-    height: 45px;
-    line-height: 45px;
+    top: 20.33em;
+    width: 10.67;
+    height: 2.5em;
+    line-height: 2.5em;
     font-family: 'Microsoft Yahei';
-    font-size: 18px;
+    font-size: 0.18em;
     color: #fff;
     text-align: center;
     user-select: auto;
@@ -173,23 +193,23 @@ export default class XiaoyaoyouGift extends Vue {
   }
   .get {
     left: 50%;
-    top: 426px;
-    width: 94px;
-    height: 31px;
+    top: 4.26em;
+    width: 0.94em;
+    height: 0.31em;
     text-indent: -9999px;
     overflow: hidden;
     transform: translate3d(-50%, 0, 0);
   }
   .tips {
-    top: 532px;
-    left: 20px;
-    right: 20px;
+    top: 40.9em;
+    left: 1.54em;
+    right: 1.54em;
     font-family: 'Microsoft Yahei';
-    font-size: 13px;
+    font-size: 0.13em;
     font-weight: bold;
     line-height: 1.5;
     color: #1d146c;
-    text-shadow: 0 0 15px rgba(255, 255, 255, .75);
+    text-shadow: 0 0 1.15em rgba(255, 255, 255, 0.75);
   }
 }
 </style>

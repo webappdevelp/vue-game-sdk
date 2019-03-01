@@ -2,13 +2,13 @@
 export const channelId = 190;
 
 // api 账号接口
-export const api = '//apis.longqihuyu.com';
+export const api = '//api.gaoruifa.cn';
 
 // u9 账号接口
-export const u9Api = '//u9phps.longqihuyu.com';
+export const u9Api = '//u9php.gaoruifa.cn';
 
 // cq 接口
-export const cqApi = '//cq.zhihuigu168.com';
+export const cqApi = '//aliyun.gaoruifa.cn';
 
 // 数据存储时间(天)
 export const expireDays = 365;
