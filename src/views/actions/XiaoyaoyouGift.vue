@@ -2,7 +2,7 @@
   <div class="xxy-gift" ref="xxy" :style="style">
     <img :src="require('../../assets/actions/xiaoyaoyou/bg.jpg')">
     <div class="card">{{ card }}</div>
-    <div class="get" @click="copyCard" :data-clipboard-text="card">点击领取</div>
+    <clip-board class="get" :text="card"></clip-board>
     <div class="tips">温馨提示：
       <br>1、进入游戏，点击主界面【激活码】输入礼包兑换码；
       <br>2、一码一兑换，一个角色只能领取一次；
@@ -12,6 +12,7 @@
 </template>
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
+import ClipBoard from '@/components/ClipBoard.vue';
 import { mapState } from 'vuex';
 import { UPDATETOAST, UPDATELOAD } from '@/stores/types';
 import md5 from 'md5';
@@ -20,9 +21,13 @@ import { cqApi, gamerStorageName } from '@/config';
 import { deviceInit } from '@/api/u9api';
 import { getStorage, setStorage } from '@/utils/ts/storage';
 import isWx from '@/utils/ts/device/isWx';
+import clipboard from '@/utils/ts/clipboard';
 let lock: boolean = false;
 
 @Component({
+  components: {
+    ClipBoard
+  },
   computed: {
     ...mapState('user', {
       action(state: any) {
@@ -165,15 +170,6 @@ export default class XiaoyaoyouGift extends Vue {
       };
     }
   }
-  // set copy
-  private copyCard() {
-    if (window.ClipboardJS) {
-      const clipBoard = new window.ClipboardJS('.get');
-      clipBoard.on('success', () => {
-        alert('复制成功');
-      });
-    }
-  }
   // lifecycle
   private created() {
     const { openId, gid } = this.$route.query;
@@ -193,7 +189,7 @@ export default class XiaoyaoyouGift extends Vue {
   private mounted() {
     this.resetFontSize();
     window.addEventListener('resize', this.resetFontSize, false);
-    this.importClipBoardJS();
+    clipboard();
   }
 }
 </script>
