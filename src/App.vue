@@ -55,7 +55,9 @@ export default class App extends Vue {
     if (storeUserInfo) {
       defaultUserInfo = {
         ...defaultUserInfo,
-        ...storeUserInfo
+        ...storeUserInfo,
+        openid:
+          !!storeUserInfo.openid && storeUserInfo.openid !== '0' ? storeUserInfo.openid : openid
       };
       this.$store.commit({
         type: `user/${UPDATEUSERINFO}`,

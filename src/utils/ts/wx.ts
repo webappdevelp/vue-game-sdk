@@ -114,72 +114,21 @@ interface PayInfo {
   signType: string;
   paySign: string;
 }
-export function wxSDKPay(params: PayInfo) {
+export function wxJSSDKPay(params: PayInfo): Promise<{errMsg: string }> {
   return new Promise((resolve, reject) => {
     if (window.wx && window.wx.chooseWXPay) {
       window.wx.chooseWXPay({
         ...params,
         timestamp: params.timeStamp,
-        success: (res: any) => {
+        success: (res: { errMsg: string }) => {
           resolve(res);
+        },
+        cancel: (res: any) => {
+          reject(res);
         }
       });
     } else {
       reject();
     }
   });
-}
-
-function wxPayCall(payInfo: PayInfo) {
-  return new Promise((resolve, reject) => {
-    try {
-      window.WeixinJSBridge.invoke(
-        'getBrandWCPayRequest',
-        payInfo,
-        (res: { err_msg: string; err_desc: string; err_code: string }) => {
-          if (/:ok/.test(res.err_msg)) {
-            resolve({
-              msg: res.err_msg
-            });
-          } else {
-            reject({
-              msg: res.err_msg
-            });
-          }
-        }
-      );
-    } catch (err) {
-      reject({
-        msg: '当前微信支付不可用'
-      });
-    }
-  });
-}
-
-export function wxPayRequest(payInfo: PayInfo) {
-  if (typeof window.WeixinJSBridge === 'undefined') {
-    return new Promise((resolve, reject) => {
-      if (document.addEventListener) {
-        try {
-          document.addEventListener(
-            'WeixinJSBridgeReady',
-            () => {
-              return wxPayCall(payInfo);
-            },
-            false
-          );
-        } catch (err) {
-          reject({
-            msg: '当前微信支付不可用'
-          });
-        }
-      } else {
-        reject({
-          msg: '当前微信支付不可用'
-        });
-      }
-    });
-  } else {
-    return wxPayCall(payInfo);
-  }
 }

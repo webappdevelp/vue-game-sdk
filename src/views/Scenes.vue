@@ -1,19 +1,16 @@
 <template>
   <div class="scenes">
     <hy-drag
-      v-if="showControlDrag"
+      v-if="!showControlDrag"
       :drag-style="controlDragStyle"
       @click="showCenter"
       @drag-start="controlDragStart"
       @drag-move="controlDragMove"
       @drag-end="controlDragEnd"
-      @resize="controlDragResize">
+      @resize="controlDragResize"
+    >
       <div class="hy-control">
-        <badge
-          v-if="controlRedDot !== ''"
-          :msg="controlRedDot"
-          :custom-style="controlBadgeStyle">
-        </badge>
+        <badge v-if="controlRedDot !== ''" :msg="controlRedDot" :custom-style="controlBadgeStyle"></badge>
       </div>
     </hy-drag>
     <hy-center
@@ -23,7 +20,12 @@
       @action="centerAction"
     />
     <account-manger :show.sync="account" :datas="scenesDatas" @action="accountAction"/>
-    <login :show.sync="login" :fast-btn-text="fastBtnText" @btn-action="loginBtnAction" @submit="goLogin"/>
+    <login
+      :show.sync="login"
+      :fast-btn-text="fastBtnText"
+      @btn-action="loginBtnAction"
+      @submit="goLogin"
+    />
     <mobile-login :show="mobile" @back="showLogin" @submit="goLogin"/>
     <fast-result :show="fastRest" :datas="scenesDatas.user" @click="playGame"/>
     <bind-mobile
@@ -41,8 +43,8 @@
       @submit="changePassword"
     />
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
-    <download-ads v-if="showDwlAds" @action="centerAction" />
-    <hy-error v-if="!showControlDrag" msg="您访问的链接出错了哦~" />
+    <download-ads v-if="showDwlAds" @action="centerAction"/>
+    <hy-error v-if="showControlDrag" msg="您访问的链接有问题哦~"/>
     <input type="hidden" name="userAction" :value="action">
     <iframe
       v-if="gameDatas.link !== ''"
@@ -66,22 +68,17 @@ const dwladsApps: string[] = ['10147'];
 import { Vue, Component } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
-import Login from '@/components/scenes/Login.vue';
-import Mobile from '@/components/scenes/Mobile.vue';
-import Password from '@/components/scenes/Password.vue';
-import FastResult from '@/components/scenes/FastResult.vue';
+import Login from '@/components/form/Login.vue';
+import Mobile from '@/components/form/Mobile.vue';
+import Password from '@/components/form/Password.vue';
+import FastResult from '@/components/FastRegResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
 import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
 import DownloadAds from '@/components/scenes/DownloadAds.vue';
 import HyError from '@/components/ErrorTips.vue';
 import md5 from 'md5';
-import {
-  UPDATETOAST,
-  UPDATELOAD,
-  UPDATEUSERACTION,
-  UPDATEGAMERINFO
-} from '@/stores/types';
+import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/stores/types';
 import { mapState } from 'vuex';
 import { cqApi, gamerStorageName, accountType } from '@/config';
 import { get } from '@/utils/ts/fetch';
@@ -90,7 +87,7 @@ import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
 import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
-import { wxPayRequest, initWXJSSDK, wxSDKPay } from '@/utils/ts/wx';
+import { initWXJSSDK, wxJSSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
 
 @Component({
@@ -208,7 +205,7 @@ export default class Scenes extends Vue {
   get showControlDrag() {
     const { sdkOptions } = this.$data;
     const { app } = sdkOptions;
-    return app !== '' && app !== '0';
+    return !app || app === '0';
   }
   get fastBtnText() {
     if (isWx && !!this.$data.loginFrom) {
@@ -244,9 +241,7 @@ export default class Scenes extends Vue {
   private getStorageGamerInfo(gid: string) {
     const userInfo = this.$store.getters['user/userInfo'];
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeGamerInfo = getStorage(
-      `${gamerStorageName}-${userInfo.uid}-${gid}`
-    );
+    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${gid}`);
     let defaultGamerInfo: { appId: string; userId: string } = {
       appId: gid,
       userId: ''
@@ -297,25 +292,21 @@ export default class Scenes extends Vue {
         gid: sdkOptions.app
       }
     })
-      .then(
-        (res: {
-          data: { cp_origin: string; cp_url: string; title: string };
-        }) => {
-          let { data } = res;
-          data = data || {};
-          const { title, cp_origin, cp_url } = data;
-          /* if (!!title) {
+      .then((res: { data: { cp_origin: string; cp_url: string; title: string } }) => {
+        let { data } = res;
+        data = data || {};
+        const { title, cp_origin, cp_url } = data;
+        /* if (!!title) {
             document.title = title;
           } */
-          this.$data.gameDatas = {
-            id: sdkOptions.app,
-            name: title,
-            origin: cp_origin,
-            link: cp_url
-          };
-          hyPSMOrigin = cp_origin;
-        }
-      )
+        this.$data.gameDatas = {
+          id: sdkOptions.app,
+          name: title,
+          origin: cp_origin,
+          link: cp_url
+        };
+        hyPSMOrigin = cp_origin;
+      })
       .catch((err: { message: string }) => {
         this.updateLoading(false);
         this.showToast(err.message);
@@ -496,9 +487,6 @@ export default class Scenes extends Vue {
   }
   // 登录游戏成功
   private playGame() {
-    if (this.$data.loginType !== 'fast' || isWx) {
-      this.showToast('登录成功');
-    }
     this.$data.login = false;
     this.$data.mobile = false;
     this.$data.fastRest = false;
@@ -571,9 +559,19 @@ export default class Scenes extends Vue {
         })
           .then((rest: { data: { pay_info: any } }) => {
             const { pay_info } = rest.data;
-            wxSDKPay(pay_info)
-              .then((payres: any) => {
-                alert(JSON.stringify(payres));
+            wxJSSDKPay(pay_info)
+              .then((payres: { errMsg: string }) => {
+                const { errMsg } = payres;
+                this.updateLoading(false);
+                if (/:ok/i.test(errMsg)) {
+                  this.postMessage({
+                    action: 'paySuccess'
+                  });
+                } else {
+                  this.postMessage({
+                    action: 'payFail'
+                  });
+                }
               })
               .catch(() => {
                 this.updateLoading(false);
@@ -581,19 +579,6 @@ export default class Scenes extends Vue {
                   action: 'payFail'
                 });
               });
-            /* wxPayRequest(pay_info)
-              .then(() => {
-                this.updateLoading(false);
-                this.postMessage({
-                  action: 'paySuccess'
-                });
-              })
-              .catch((err: any) => {
-                this.updateLoading(false);
-                this.postMessage({
-                  action: 'payFail'
-                });
-              }); */
           })
           .catch((err: { message: string }) => {
             this.updateLoading(false);
@@ -722,16 +707,11 @@ export default class Scenes extends Vue {
       top: `${movedY}px`
     };
   }
-  private controlDragEnd(params: {
-    dragOffsetLeft: number;
-    dragOffsetTop: number;
-  }) {
+  private controlDragEnd(params: { dragOffsetLeft: number; dragOffsetTop: number }) {
     const { controlDragStyle, controlBadgeStyle } = this.$data;
     const { dragOffsetLeft, dragOffsetTop } = params;
-    const screenWidth =
-      document.body.clientWidth || document.documentElement.clientWidth;
-    const screenHeight =
-      document.body.clientHeight || document.documentElement.clientHeight;
+    const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
+    const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
     const difX = screenWidth - dragOffsetLeft;
     const difY = screenHeight - dragOffsetTop;
     const obj: any = {
@@ -843,24 +823,26 @@ export default class Scenes extends Vue {
   }
 
   // lifecycles
-  private beforeCreate() {
+  private created() {
     this.$store.commit({
       type: UPDATELOAD,
       data: true
     });
-  }
-  private created() {
     const { gid, openId, aid, device_type } = this.$route.query;
+    const userInfo = this.$store.getters['user/userInfo'];
+    if (isWx && (!userInfo.openid || userInfo.openid === '0') && (!openId || openId === '0')) {
+      return window.location.href = `/user/scenes?gid=${gid}`;
+    }
     this.$data.sdkOptions = {
       app: gid || '',
       app_id: gid || '',
       aid: aid || '',
       Aid: aid || '',
-      openid: openId || ''
+      openid: openId || '0'
     };
     this.$data.deviceType = device_type || '';
     this.$data.loginFrom = getStorage(accountType);
-    if (gid) {
+    if (!!gid && gid !== '0') {
       this.getStorageGamerInfo(gid as string);
       try {
         this.getInitData();
@@ -881,9 +863,7 @@ export default class Scenes extends Vue {
       title: '梦幻逍遥游',
       desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
       link: `${window.location.origin}/user/scenes?gid=${gid}`,
-      imgUrl: `${
-        window.location.origin
-      }${require('../assets/shareicon/xymy.png')}`
+      imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
     }).then((res: any) => {
       this.postMessage({
         action: 'shareComplete'
@@ -904,12 +884,10 @@ body,
 <style lang="scss" scoped>
 .scenes,
 #gameWindow {
+  position: relative;
   height: 100%;
   width: 100%;
   overflow: hidden;
-}
-.hy-error {
-  padding-top: 50%;
 }
 .hy-control {
   position: relative;

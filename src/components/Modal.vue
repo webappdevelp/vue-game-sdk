@@ -1,7 +1,7 @@
 <template>
   <hy-dialog :show="show" :animate="animate" :z-index="zIndex">
     <template slot-scope="scope">
-      <div class="hy-modal" :style="scope.scope">
+      <div class="hy-modal" :style="scope.scope.frontStyle">
         <slot></slot>
       </div>
     </template>

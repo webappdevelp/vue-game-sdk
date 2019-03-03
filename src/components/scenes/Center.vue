@@ -1,7 +1,7 @@
 <template>
   <hy-dialog :show="show" animate="left" z-index="30" @close="hide">
     <template slot-scope="scope">
-      <div class="hy-center" :style="scope.scope">
+      <div class="hy-center" :style="scope.scope.frontStyle">
         <center-header :datas="userDatas" @action="action" />
         <ul class="hy-center-current">
           <li>

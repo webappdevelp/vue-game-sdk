@@ -10,16 +10,21 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 export default class HyErrorTip extends Vue {
   @Prop({
     type: String,
-    default: '出错了哦~'
+    default: '404，出错了哦~'
   })
   private msg!: string;
 }
 </script>
 <style lang="scss" scoped>
 .hy-error {
-  font-size: 15px;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  font-size: 20px;
   color: #333;
   text-align: center;
+  transform: translate3d(0, -50%, 0);
   img {
     display: block;
     margin: 10px auto 0;

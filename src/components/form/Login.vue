@@ -32,10 +32,10 @@
 <script lang="ts">
 let tempForm: any = {};
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import Modal from '../Modal.vue';
-import Icon from '../Icon.vue';
-import HyInput from '../form/Input.vue';
-import Btn from '../Btn.vue';
+import Modal from '@/components/Modal.vue';
+import Icon from '@/components/Icon.vue';
+import HyInput from '@/components/form/Input.vue';
+import Btn from '@/components/Btn.vue';
 import { validateForm } from '@/utils/ts/form';
 import deepCopy from '@/utils/ts/deepCopy';
 @Component({

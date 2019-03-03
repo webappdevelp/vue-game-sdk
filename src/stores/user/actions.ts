@@ -330,15 +330,15 @@ const actions = {
   // 获取控制中心相关数据
   getControlInfo: (
     { state, commit }: { state: any; commit: any },
-    params: { app: string; app_id: string; device: number }
+    params: { app_id: string; device: number }
   ) => {
     const { userInfo } = state;
-    const { app, app_id, device } = params;
+    const { app_id, device } = params;
     return new Promise(resolve => {
       getServiceInfo({
         token: userInfo.token,
         guid: userInfo.guid,
-        app,
+        app: app_id,
         app_id,
         device
       })

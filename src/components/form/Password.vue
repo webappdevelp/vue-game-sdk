@@ -86,11 +86,11 @@ const defaultPForm: any = {
 };
 let tempForm: any = {};
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import Modal from '../Modal.vue';
-import Icon from '../Icon.vue';
-import HyInput from '../form/Input.vue';
-import GetCode from '../GetCodeBtn.vue';
-import Btn from '../Btn.vue';
+import Modal from '@/components/Modal.vue';
+import Icon from '@/components/Icon.vue';
+import HyInput from '@/components/form/Input.vue';
+import GetCode from '@/components/GetCodeBtn.vue';
+import Btn from '@/components/Btn.vue';
 import deepCopy from '@/utils/ts/deepCopy';
 import { regMobile } from '@/utils/ts/regexps';
 import { validateForm } from '@/utils/ts/form';

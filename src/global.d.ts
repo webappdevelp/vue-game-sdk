@@ -9,6 +9,7 @@ interface Window {
   android: {
     setClipboardData?: (str: string) => void;
   };
+  ClipboardJS: any;
   WeixinJSBridge: {
     on: (action: string, cb: (params?: any) => void) => void;
     invoke: (event: string, params?: any, cb?: (params: any) => void) => void;
@@ -82,6 +83,7 @@ interface Window {
       signType: string;
       paySign: string;
       success?: (res: any) => void;
+      cancel?: (res: any) => void;
     }) => void;
   };
 }

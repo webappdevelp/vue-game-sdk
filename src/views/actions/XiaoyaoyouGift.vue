@@ -1,10 +1,13 @@
 <template>
   <div class="xxy-gift" ref="xxy" :style="style">
-    <img :src="require('../../assets/actions/xiaoyaoyou/bg.jpg')" />
+    <img :src="require('../../assets/actions/xiaoyaoyou/bg.jpg')">
     <div class="card">{{ card }}</div>
-    <div class="get" @click="getCard">点击领取</div>
-    <div class="tips">温馨提示：<br /> 1、进入游戏，点击主界面【激活码】输入礼包兑换码； <br />2、一码一兑换，一个角色只能领取一次；</div>
-    <input type="hidden" :value="action" />
+    <div class="get" @click="copyCard" :data-clipboard-text="card">点击领取</div>
+    <div class="tips">温馨提示：
+      <br>1、进入游戏，点击主界面【激活码】输入礼包兑换码；
+      <br>2、一码一兑换，一个角色只能领取一次；
+    </div>
+    <input type="hidden" :value="action">
   </div>
 </template>
 <script lang="ts">
@@ -13,7 +16,7 @@ import { mapState } from 'vuex';
 import { UPDATETOAST, UPDATELOAD } from '@/stores/types';
 import md5 from 'md5';
 import { post } from '@/utils/ts/fetch';
-import { cqApi } from '@/config';
+import { cqApi, gamerStorageName } from '@/config';
 import { deviceInit } from '@/api/u9api';
 import { getStorage, setStorage } from '@/utils/ts/storage';
 import isWx from '@/utils/ts/device/isWx';
@@ -28,6 +31,8 @@ let lock: boolean = false;
           this.$store.dispatch('user/loginGame', {
             ...this.$data.sdkOptions
           });
+        } else if (state.userAction === 'logined' && state.gamerAction === 'logined') {
+          this.getCard();
         }
       }
     })
@@ -62,6 +67,15 @@ export default class XiaoyaoyouGift extends Vue {
       data: show
     });
   }
+  private importClipBoardJS() {
+    return new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = '//cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js';
+      script.type = 'text/javascript';
+      script.onload = resolve;
+      (document.querySelector('head') as HTMLElement).appendChild(script);
+    });
+  }
   // 初始化设备
   private init() {
     const { openid } = this.$data.sdkOptions;
@@ -73,7 +87,6 @@ export default class XiaoyaoyouGift extends Vue {
       imei: openid !== '' && openid !== '0' ? openid : storageImei
     })
       .then((res: { data: { device: number; imei: string } }) => {
-        this.updateLoading(false);
         const { imei, device } = res.data;
         if (device) {
           this.$data.sdkOptions = {
@@ -87,31 +100,43 @@ export default class XiaoyaoyouGift extends Vue {
         this.goLogin();
       })
       .catch((err: { message: string }) => {
-        this.updateLoading(false);
         this.showToast(err.message);
       });
   }
   // 登录
   private goLogin() {
-    this.$store.dispatch('user/login', {
-      action: 'fast',
-      params: {
-        ...this.$data.sdkOptions,
-        password: md5(`hy${new Date().getTime()}LongQi`)
-      }
-    });
+    const userInfo = this.$store.getters['user/userInfo'];
+    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${userInfo.app}`);
+    if (!!userInfo.uid && !!userInfo.token  && !!storeGamerInfo.userId) {
+      this.getCard(storeGamerInfo.userId);
+    } else {
+      this.$store.dispatch('user/login', {
+        action: 'fast',
+        params: {
+          ...this.$data.sdkOptions,
+          password: md5(`hy${new Date().getTime()}LongQi`)
+        }
+      });
+    }
   }
   // 获取礼包
-  private getCard() {
+  private getCard(uid?: string) {
+    if (!isWx) {
+      return this.showToast('请使在微信内打开哦');
+    }
+    const storageCard = getStorage('card');
+    if (storageCard) {
+      return this.$data.card = storageCard;
+    }
     if (lock) {
       return;
     }
     lock = true;
-    const gamerrInfo = this.$store.getters['user/gamerInfo'];
+    const gamerInfo = this.$store.getters['user/gamerInfo'];
     this.updateLoading(true);
     post(`${cqApi}/lqhy/getCode`, {
       datas: {
-        uid: gamerrInfo.userId || ''
+        uid: uid ? uid : gamerInfo.userId || ''
       },
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -122,6 +147,7 @@ export default class XiaoyaoyouGift extends Vue {
         this.updateLoading(false);
         const { card } = res.data;
         this.$data.card = card || '';
+        setStorage('card', card);
       })
       .catch((err: { message: string }) => {
         lock = false;
@@ -130,12 +156,23 @@ export default class XiaoyaoyouGift extends Vue {
       });
   }
   private resetFontSize() {
-    let screenWidth = (this.$refs.xxy as HTMLElement).clientWidth;
-    screenWidth = screenWidth > 414 ? 414 : screenWidth;
-    const fontSize = (screenWidth / 375) * 100;
-    this.$data.style = {
-      fontSize: `${fontSize}px`
-    };
+    if (this.$refs.xxy) {
+      let screenWidth = (this.$refs.xxy as HTMLElement).clientWidth;
+      screenWidth = screenWidth > 414 ? 414 : screenWidth;
+      const fontSize = (screenWidth / 375) * 100;
+      this.$data.style = {
+        fontSize: `${fontSize}px`
+      };
+    }
+  }
+  // set copy
+  private copyCard() {
+    if (window.ClipboardJS) {
+      const clipBoard = new window.ClipboardJS('.get');
+      clipBoard.on('success', () => {
+        alert('复制成功');
+      });
+    }
   }
   // lifecycle
   private created() {
@@ -156,6 +193,7 @@ export default class XiaoyaoyouGift extends Vue {
   private mounted() {
     this.resetFontSize();
     window.addEventListener('resize', this.resetFontSize, false);
+    this.importClipBoardJS();
   }
 }
 </script>
@@ -181,7 +219,7 @@ export default class XiaoyaoyouGift extends Vue {
   .card {
     left: 50%;
     top: 20.33em;
-    width: 10.67;
+    width: 10.67em;
     height: 2.5em;
     line-height: 2.5em;
     font-family: 'Microsoft Yahei';
@@ -197,6 +235,8 @@ export default class XiaoyaoyouGift extends Vue {
     width: 0.94em;
     height: 0.31em;
     text-indent: -9999px;
+    user-select: auto;
+    cursor: pointer;
     overflow: hidden;
     transform: translate3d(-50%, 0, 0);
   }

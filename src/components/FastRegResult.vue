@@ -15,15 +15,15 @@
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
-import Modal from '../Modal.vue';
-import Btn from '../Btn.vue';
+import Modal from '@/components/Modal.vue';
+import Btn from '@/components/Btn.vue';
 @Component({
   components: {
     Modal,
     Btn
   }
 })
-export default class HyFastRegister extends Vue {
+export default class HyFastRegisterResult extends Vue {
   @Prop({
     type: Boolean,
     default: false

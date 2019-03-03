@@ -5,7 +5,7 @@
     </transition>
     <transition :name="animate" type="animation" mode="out-in">
       <template v-if="show">
-        <slot :scope="frontStyle"></slot>
+        <slot :scope="{frontStyle}"></slot>
       </template>
     </transition>
   </div>
@@ -29,16 +29,6 @@ export default class HyScenesModal extends Vue {
     default: '20'
   })
   private zIndex!: string;
-  @Prop({
-    type: String,
-    default: '0'
-  })
-  private width!: string;
-  @Prop({
-    type: String,
-    default: '0'
-  })
-  private height!: string;
 
   // computed
   get bgStyle() {
@@ -89,9 +79,8 @@ export default class HyScenesModal extends Vue {
 .fade-enter-active {
   animation: fadeIn 0.2s;
 }
-.fade-leave,
 .fade-leave-active {
-  animation: fadeIn 0.2s reverse;
+  animation: fadeOut 0.2s;
 }
 @keyframes fadeIn {
   from {
@@ -101,13 +90,20 @@ export default class HyScenesModal extends Vue {
     opacity: 1;
   }
 }
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 
 .right-enter-active {
   animation: rightIn 0.3s;
 }
-.right-leave,
 .right-leave-active {
-  animation: rightIn 0.3s reverse;
+  animation: rightOut 0.3s;
 }
 @keyframes rightIn {
   from {
@@ -121,11 +117,22 @@ export default class HyScenesModal extends Vue {
     transform: translate3d(0, -50%, 0);
   }
 }
+@keyframes rightOut {
+  from {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, -50%, 0);
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(120%, -50%, 0);
+  }
+}
 
 .left-enter-active {
   animation: leftIn 0.3s;
 }
-.left-leave,
 .left-leave-active {
   animation: leftIn 0.3s reverse;
 }
@@ -139,6 +146,18 @@ export default class HyScenesModal extends Vue {
     opacity: 1;
     visibility: visible;
     transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes leftOut {
+  from {
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(-120%, 0, 0);
   }
 }
 </style>
