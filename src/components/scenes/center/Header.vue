@@ -3,8 +3,8 @@
     <div class="user-avatar" :style="style"></div>
     <ul class="user-info">
       <li>
-        <a href="javascript:;" @click="action('account')">『账号管理』</a>
-        <a href="javascript:;" @click="action('logOut')">『切换账号』</a>
+        <a href="javascript:;" @click="action('account')">[账号管理]</a>
+        <a href="javascript:;" @click="action('logOut')">[切换账号]</a>
       </li>
       <li>账号：{{ datas.username }}</li>
     </ul>
@@ -91,6 +91,13 @@ export default class HyCenterHeader extends Vue {
     background: #f5ddc0;
     overflow: hidden;
     transform: translate3d(0, -50%, 0);
+  }
+}
+@media screen and (max-width: 320px) {
+  .hy-center-header {
+    .user-info a {
+      font-size: 12px;
+    }
   }
 }
 </style>

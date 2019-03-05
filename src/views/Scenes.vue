@@ -42,6 +42,26 @@
       @back="showAccount"
       @submit="changePassword"
     />
+    <hy-article :show.sync="showArticle" :datas="article"/>
+    <hy-alert
+      :show="showCard"
+      z-index="40"
+      title="领取提示">
+      <template slot="content">
+        <div class="gift-card">
+          <div class="gift-card-nums">
+            <span>兑换码：</span>
+            <p>{{ card }}</p>
+          </div>
+          <div class="gift-card-tips">
+            复制兑换码，去游戏中使用
+          </div>
+        </div>
+      </template>
+      <template slot="footer">
+        <clipboard-btn :text="card" @click="toggleCard" />
+      </template>
+    </hy-alert>
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
     <download-ads v-if="showDwlAds" @action="centerAction"/>
     <hy-error v-if="showControlDrag" msg="您访问的链接有问题哦~"/>
@@ -68,6 +88,8 @@ const dwladsApps: string[] = ['10147'];
 import { Vue, Component } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
+import DownloadAds from '@/components/scenes/DownloadAds.vue';
+import HyArticle from '@/components/scenes/Article.vue';
 import Login from '@/components/form/Login.vue';
 import Mobile from '@/components/form/Mobile.vue';
 import Password from '@/components/form/Password.vue';
@@ -75,8 +97,9 @@ import FastResult from '@/components/FastRegResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
 import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
-import DownloadAds from '@/components/scenes/DownloadAds.vue';
 import HyError from '@/components/ErrorTips.vue';
+import HyAlert from '@/components/Alert.vue';
+import ClipboardBtn from '@/components/ClipBoard.vue';
 import md5 from 'md5';
 import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/stores/types';
 import { mapState } from 'vuex';
@@ -89,6 +112,47 @@ import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import { initWXJSSDK, wxJSSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
+import clipboard from '@/utils/ts/clipboard';
+const defaultInfos = [
+  {
+    title: '《梦幻逍遥游》游戏介绍',
+    date: '02-18',
+    tags: [{ text: '置顶', color: '' }],
+    content: `<p>《梦幻逍遥游》是一款西游题材的回合制游戏。游戏世界以西游为架构，包含浓郁的神话气息，在这里你可以感受到蛮荒神兽的力量，也可以与天宫的仙子共舞，精美的画面表现，便捷轻松的挂机玩法，还有唯美的外观系统。各种轻松又强大的功能系等待你的体验，更多精彩尽在《梦幻逍遥游》！</p>
+          <p>高亲密度的社交组队系统，组队PK，推倒boss，秒爆神装！</p>
+          <p>自动挂机功能让你彻底解放双手！强大的离线经验系统即使不在线也获得经验，不用担心等级落后；休闲与娱乐为一体的多端回合制巨作，快来与我一起称霸三界！</p><p>喜欢《梦幻逍遥游》的玩家可以在留言多多评论，我们都会认真采纳的，谢谢</p>`
+  },
+  {
+    title: '宠物系统',
+    date: '03-01',
+    content: `<p>说起回合制游戏，最重要的系统之一，无疑是宠物系统了。有一个强力的萌宠，任何困难的关卡都变得简单起来；</p><p>梦幻逍遥游内也有各种各样的宠物，每个宠物都有各自的技能，合理的搭配，可以让你走的更远；</p>
+<p>宠物是如此的重要，要怎么才可以获得呢？其实十分简单，在挂机的时候，就会偶遇到不同的宠物，只要点击捕抓，就可以获得对应的宠物啦。即使获得的宠物没有出战，也会给主人带来战力加强哦。如果一直没有偶遇到心仪的宠物也没关系，商店也可以购买对应的宠物卡片，激活后即可获得对应宠物，快来感受一下吧；</p>`
+  },
+  {
+    title: '结婚系统',
+    date: '03-01',
+    content: `<p>玩家等级达到55级后，即可开启结婚系统，与您心爱的人共同度过西游世界的浪漫旅程；是不是迫不及待想知道怎么样进行结婚仪式呢，莫慌，以下为各位进行详解；</p>
+<p>首先结婚需要满足以下条件：</p>
+<p>双方达到55级以上；</p>
+<p>大家互为好友且单身（重婚犯法）；</p>
+<p>有剩余的结婚次数；</p>
+<p>满足以上条件后，进入主城界面，点击“情缘”按钮，即可进入求婚界面，点击求婚对象，即可像你的意中人进行求婚了。是不是简单快捷？祝大家在梦幻逍遥游中都可以找到相伴一生的伴侣吧；</p>`
+  },
+  {
+    title: '组队副本介绍',
+    date: '03-04',
+    content: `<p>遇见强大的boss打不过怎么办？当然是喊上小伙伴来群殴它啦；</p>
+<p>梦幻逍遥游中，有各种强大的boss，组队副本内，就有许多邪恶而强大的boss；在前期如果玩家没办法单独战胜它的话，可以组上小伙伴一起通关，一个小组最多可以3人组成；</p>
+<p>只需要在组队副本点击创建队伍，来自不同服务器的玩家都会可以和你组成小队哦；任何boss在这么强大的战力之下，也只能饮恨而终吧，不仅可以得到boss掉落的强大装备，还可以看到其他服务器玩家的风采，快来感受下吧；</p>`
+  }
+];
+const defaultKeFu = {
+  numbers: `QQ群：805453802
+          <br>QQ客服：2814384213
+          <br>客服电话：
+          <a href="tel:020-86805149">020-86805149</a>`,
+  wx_qrcode: require('../assets/xiaoyaoyou/wx-qrcode.jpg')
+};
 
 @Component({
   components: {
@@ -96,6 +160,7 @@ import fixFormBug from '@/utils/ts/fixFormBug';
     Badge,
     HyCenter,
     AccountManger,
+    HyArticle,
     Login,
     MobileLogin: Mobile,
     BindMobile: Mobile,
@@ -103,7 +168,9 @@ import fixFormBug from '@/utils/ts/fixFormBug';
     FastResult,
     WxToBrowser,
     DownloadAds,
-    HyError
+    HyError,
+    HyAlert,
+    ClipboardBtn
   },
   computed: {
     // ...mapState(['toast', 'loading']),
@@ -182,6 +249,10 @@ export default class Scenes extends Vue {
       login: false,
       mobile: false,
       fastRest: false,
+      showArticle: false,
+      showCard: false,
+      card: '',
+      article: {},
       loginType: '',
       loginFrom: '',
       account: false,
@@ -303,7 +374,11 @@ export default class Scenes extends Vue {
           id: sdkOptions.app,
           name: title,
           origin: cp_origin,
-          link: cp_url
+          link: cp_url,
+          infos: defaultInfos,
+          kefu: {
+            ...defaultKeFu
+          }
         };
         hyPSMOrigin = cp_origin;
       })
@@ -371,27 +446,13 @@ export default class Scenes extends Vue {
           this.$store.dispatch('user/logOut');
           break;
         case 'initSuccess':
-          if (isWx) {
-            // 判断是否登录平台
-            if (!this.$store.getters['user/isLogin']) {
-              // 假如是在微信内，又有openid时，则直接使用openid进行账号登录
-              if (isWx && !loginFrom) {
-                return this.loginBtnAction('fast');
-              }
-              return (this.$data.login = true);
-            }
-            this.$data.loginType = 'auto';
-            // 判断是否登录游戏
-            if (!this.$store.getters['user/isGameLogin']) {
-              return this.$store.commit({
-                type: `user/${UPDATEUSERACTION}`,
-                data: 'logined'
-              });
-            }
-            this.playGame();
-          }
+          console.log('SDK initSuccess');
           break;
         case 'login':
+          // 假如在微信内，登录的控制只能由 sdk 自身来操作,或者存在弹窗的登录面板时，不继续操作
+          if (!!this.$data.login || !!this.$data.mobile) {
+            return;
+          }
           // 判断是否登录平台
           if (!this.$store.getters['user/isLogin']) {
             // 假如是在微信内，又有openid时，则直接使用openid进行账号登录
@@ -610,28 +671,39 @@ export default class Scenes extends Vue {
   }
   private centerAction({ action, params }: { action: string; params: any }) {
     const { loginFrom } = this.$data;
-    if (action === 'wxTip' && params) {
-      if (!isWx) {
-        const userInfo = this.$store.state.user.userInfo;
-        return (window.location.href = `http://cs.huiyaohuyu.cc/test.html?device=h5&guid=${
-          userInfo.guid
-        }&account=${userInfo.username}&level=${userInfo.cs_vip_level}`);
-      }
-      this.$data.wxTip = {
-        show: true,
-        msg: params
-      };
-    } else if (action === 'account') {
-      this.$data.center = false;
-      this.$data.account = true;
-    } else if (action === 'logOut') {
-      this.$data.center = false;
-      if (isWx && !loginFrom) {
-        setStorage(accountType, 'username');
-      } else if (isWx) {
-        delStorage(accountType);
-      }
-      this.$store.dispatch('user/logOut');
+    switch (action) {
+      case 'wxTip':
+        if (params) {
+          if (!isWx) {
+            const userInfo = this.$store.state.user.userInfo;
+            return (window.location.href = `http://cs.huiyaohuyu.cc/test.html?device=h5&guid=${
+              userInfo.guid
+            }&account=${userInfo.username}&level=${userInfo.cs_vip_level}`);
+          }
+          this.$data.wxTip = {
+            show: true,
+            msg: params
+          };
+        }
+        break;
+      case 'account':
+        this.$data.center = false;
+        this.$data.account = true;
+        break;
+      case 'logOut':
+        this.$data.center = false;
+        if (isWx && !loginFrom) {
+          setStorage(accountType, 'username');
+        } else if (isWx) {
+          delStorage(accountType);
+        }
+        this.$store.dispatch('user/logOut');
+        break;
+      case 'article':
+        const { infos } = this.$data.gameDatas;
+        this.$data.article = infos[params];
+        this.$data.showArticle = true;
+        break;
     }
   }
   /** 账户管理 */
@@ -821,6 +893,10 @@ export default class Scenes extends Vue {
       };
     }, 5000);
   }
+  // 显示隐藏领取的礼包弹窗
+  private toggleCard() {
+    this.$data.showCard = !this.$data.showCard;
+  }
 
   // lifecycles
   private created() {
@@ -829,9 +905,8 @@ export default class Scenes extends Vue {
       data: true
     });
     const { gid, openId, aid, device_type } = this.$route.query;
-    const userInfo = this.$store.getters['user/userInfo'];
-    if (isWx && (!userInfo.openid || userInfo.openid === '0') && (!openId || openId === '0')) {
-      return window.location.href = `/user/scenes?gid=${gid}`;
+    if (isWx && (!openId || openId === '0')) {
+      return (window.location.href = `/user/scenes?gid=${gid}`);
     }
     this.$data.sdkOptions = {
       app: gid || '',
@@ -846,6 +921,7 @@ export default class Scenes extends Vue {
       this.getStorageGamerInfo(gid as string);
       try {
         this.getInitData();
+        clipboard();
       } catch (err) {
         alert(err.message);
       }
@@ -903,5 +979,35 @@ body,
     text-align: center;
     transition: all 0.3s ease;
   }
+}
+.gift-card {
+  user-select: auto;
+  color: #999;
+  &-nums {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    p {
+      flex: 1;
+      border-radius: 2px;
+      background: #e5e5e5;
+      text-align: center;
+      user-select: auto;
+    }
+  }
+  &-tips {
+    margin-top: 10px;
+    font-size: 12px;
+    text-align: center;
+  }
+}
+.clipboard {
+  flex: 1;
+  height: 40px;
+  line-height: 40px;
+  font-size: 15px;
+  text-align: center;
+  color: #018ffd;
 }
 </style>

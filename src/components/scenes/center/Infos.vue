@@ -1,25 +1,23 @@
 <template>
   <div class="hy-infos">
-    <div class="hy-infos-empty">
-      暂无相关资讯哦~
-    </div>
-    <template v-if="!!datas.length">
-      <div class="hy-info-item">
-        <Tag text="置顶" />
-        <span class="title">《大天使H5》拍卖行提示“帐号存在安全隐患”公告</span>
-        <span class="timer">02-18</span>
-      </div>
-      <div class="hy-info-item">
-        <Tag text="置顶" />
-        <Tag text="攻略" color="blue" />
-        <span class="title">《大天使H5》拍卖行提示“帐号存在安全隐患”公告</span>
-        <span class="timer">02-10</span>
+    <div v-if="!datas.infos || !datas.infos.length" class="hy-infos-empty">暂无相关资讯哦~</div>
+    <template v-else>
+      <div
+        class="hy-info-item"
+        v-for="(item, index) in datas.infos"
+        :key="index"
+        @click="action(index)">
+        <template v-if="!!item.tags">
+          <Tag v-for="(tag, id) in item.tags" :key="id" :text="tag.text" :color="tag.color"/>
+        </template>
+        <span class="title">{{ item.title }}</span>
+        <span class="timer">{{ item.date }}</span>
       </div>
     </template>
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
 import Tag from '../../Tag.vue';
 @Component({
   components: {
@@ -27,14 +25,25 @@ import Tag from '../../Tag.vue';
   }
 })
 export default class HyCenterInfos extends Vue {
-  private data() {
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private datas!: object;
+
+  // methods
+  @Emit()
+  private action(id: number) {
     return {
-      datas: []
-    };
+      action: 'article',
+      params: id
+    }
   }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 .hy-infos {
   height: 100%;
   padding: 0 12px;
@@ -73,6 +82,17 @@ export default class HyCenterInfos extends Vue {
   }
   .hy-tag + .hy-tag {
     margin-left: 5px;
+  }
+}
+@media screen and (max-width: 320px) {
+  .hy-infos {
+    .hy-info-item {
+      padding: 14px 0 8px;
+      .title,
+      .timer {
+        font-size: 13px;
+      }
+    }
   }
 }
 </style>

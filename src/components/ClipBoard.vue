@@ -1,6 +1,6 @@
 <template>
   <div class="clipboard" @click="copy" :data-clipboard-text="text">
-    <slot></slot>
+    <slot>复制</slot>
   </div>
 </template>
 <script lang="ts">
@@ -19,8 +19,14 @@ export default class ClipBoard extends Vue {
     if (window.ClipboardJS) {
       const clipboard = new window.ClipboardJS('.clipboard');
       clipboard.on('success', () => {
+        this.$emit('click');
         alert('复制成功');
       });
+      clipboard.on('error', () => {
+        alert('复制失败');
+      })
+    } else {
+      alert('缺少ClipBoard支持');
     }
   }
 }

@@ -11,9 +11,9 @@
         <div class="hy-center-body">
           <menus :current.sync="currentTab"/>
           <div class="center-info-box">
-            <gifts v-if="currentTab === 1"/>
-            <infos v-else-if="currentTab === 2"/>
-            <kefu v-else @action="action"/>
+            <gifts v-if="currentTab === 1" @action="action" />
+            <infos v-else-if="currentTab === 2" @action="action" :datas="gameDatas" />
+            <kefu v-else @action="action" :datas="gameDatas"/>
           </div>
         </div>
         <div class="hy-center-control">

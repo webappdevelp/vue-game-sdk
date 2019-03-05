@@ -1,7 +1,7 @@
 <template>
   <hy-dialog z-index="50" :show="show" @close="hide">
     <template slot-scope="scope">
-      <div class="hy-wxtobrowser" :style="scope.scope">
+      <div class="hy-wxtobrowser" :style="scope.scope.frontStyle">
         <p>
           您可以点击右上角按钮，选择<i>在浏览器打开</i>，{{ msg }}
         </p>

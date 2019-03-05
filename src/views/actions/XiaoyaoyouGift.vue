@@ -2,11 +2,7 @@
   <div class="xxy-gift" ref="xxy" :style="style">
     <img :src="require('../../assets/actions/xiaoyaoyou/bg.jpg')">
     <div class="card">{{ card }}</div>
-    <clip-board class="get" :text="card"></clip-board>
-    <div class="tips">温馨提示：
-      <br>1、进入游戏，点击主界面【激活码】输入礼包兑换码；
-      <br>2、一码一兑换，一个角色只能领取一次；
-    </div>
+    <clip-board class="get" :text="card" />
     <input type="hidden" :value="action">
   </div>
 </template>
@@ -235,17 +231,6 @@ export default class XiaoyaoyouGift extends Vue {
     cursor: pointer;
     overflow: hidden;
     transform: translate3d(-50%, 0, 0);
-  }
-  .tips {
-    top: 40.9em;
-    left: 1.54em;
-    right: 1.54em;
-    font-family: 'Microsoft Yahei';
-    font-size: 0.13em;
-    font-weight: bold;
-    line-height: 1.5;
-    color: #1d146c;
-    text-shadow: 0 0 1.15em rgba(255, 255, 255, 0.75);
   }
 }
 </style>
