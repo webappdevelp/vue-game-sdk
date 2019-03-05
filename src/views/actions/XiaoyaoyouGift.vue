@@ -68,15 +68,6 @@ export default class XiaoyaoyouGift extends Vue {
       data: show
     });
   }
-  private importClipBoardJS() {
-    return new Promise(resolve => {
-      const script = document.createElement('script');
-      script.src = '//cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js';
-      script.type = 'text/javascript';
-      script.onload = resolve;
-      (document.querySelector('head') as HTMLElement).appendChild(script);
-    });
-  }
   // 初始化设备
   private init() {
     const { openid } = this.$data.sdkOptions;
@@ -167,6 +158,9 @@ export default class XiaoyaoyouGift extends Vue {
     }
   }
   // lifecycle
+  private beforeCreate() {
+    clipboard();
+  }
   private created() {
     const { openId, gid } = this.$route.query;
     const { sdkOptions, style } = this.$data;
@@ -185,7 +179,6 @@ export default class XiaoyaoyouGift extends Vue {
   private mounted() {
     this.resetFontSize();
     window.addEventListener('resize', this.resetFontSize, false);
-    clipboard();
   }
 }
 </script>

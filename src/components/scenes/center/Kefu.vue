@@ -109,7 +109,7 @@ export default class HyCenterKeFu extends Vue {
     }
     img {
       width: 125px;
-      height: auto;
+      height: 125px;
     }
     p {
       font-size: 12px;
@@ -141,7 +141,7 @@ export default class HyCenterKeFu extends Vue {
     img {
       display: block;
       width: 150px;
-      height: auto;
+      height: 150px;
       margin: 0 auto 15px;
     }
     a {

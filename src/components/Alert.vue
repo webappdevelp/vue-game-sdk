@@ -52,14 +52,14 @@ export default class HyAlert extends Vue {
 <style lang="scss">
 .hy-alert {
   &-title {
-    padding: 12px 0;
-    font-size: 15px;
+    padding: 18px 0;
+    font-size: 16px;
     font-weight: bold;
     color: #333;
     text-align: center;
   }
   &-content {
-    padding: 0 20px 12px;
+    padding: 0 20px 18px;
     font-size: 13px;
     color: #333;
   }
@@ -71,9 +71,9 @@ export default class HyAlert extends Vue {
   }
   &-btn {
     flex: 1;
-    height: 40px;
-    line-height: 40px;
-    font-size: 15px;
+    height: 48px;
+    line-height: 48px;
+    font-size: 16px;
     text-align: center;
     color: #018ffd;
   }

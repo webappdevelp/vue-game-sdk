@@ -43,23 +43,18 @@
       @submit="changePassword"
     />
     <hy-article :show.sync="showArticle" :datas="article"/>
-    <hy-alert
-      :show="showCard"
-      z-index="40"
-      title="领取提示">
+    <hy-alert :show="showCard" z-index="40" title="领取提示">
       <template slot="content">
         <div class="gift-card">
           <div class="gift-card-nums">
             <span>兑换码：</span>
             <p>{{ card }}</p>
           </div>
-          <div class="gift-card-tips">
-            复制兑换码，去游戏中使用
-          </div>
+          <div class="gift-card-tips">复制兑换码，去游戏中使用</div>
         </div>
       </template>
       <template slot="footer">
-        <clipboard-btn :text="card" @click="toggleCard" />
+        <clipboard-btn :text="card" @click="toggleCard"/>
       </template>
     </hy-alert>
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
@@ -189,7 +184,11 @@ const defaultKeFu = {
         };
       },
       controlRedDot(state: any) {
-        if (!!state.userInfo.uid && !state.userInfo.mobile) {
+        const { gameDatas } = this.$data;
+        const { gifts } = gameDatas;
+        if (gifts && !!gifts.length) {
+          return '礼包';
+        } else if (!!state.userInfo.uid && !state.userInfo.mobile) {
           return '1';
         }
         return '';
@@ -266,7 +265,7 @@ export default class Scenes extends Vue {
       controlDragStyle: {
         zIndex: '10',
         top: '13%',
-        right: '-20px'
+        right: '-10px'
       },
       controlBadgeStyle: {},
       deviceType: ''
@@ -381,10 +380,25 @@ export default class Scenes extends Vue {
           }
         };
         hyPSMOrigin = cp_origin;
+        // 处理微信分享
+        initWXJSSDK({
+          title: '梦幻逍遥游',
+          desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
+          link: `${window.location.origin}/user/scenes?gid=${sdkOptions.app}`,
+          imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
+        }).then(() => {
+          this.postMessage({
+            action: 'shareComplete'
+          });
+        });
       })
       .catch((err: { message: string }) => {
         this.updateLoading(false);
-        this.showToast(err.message);
+        this.$data.sdkOptions = {
+          ...this.$data.sdkOptions,
+          app: '',
+          app_id: ''
+        };
       });
   }
   // 发送消息
@@ -552,14 +566,15 @@ export default class Scenes extends Vue {
     this.$data.mobile = false;
     this.$data.fastRest = false;
     this.$data.loginType = '';
-    // 登录平台后，获取控制中心小浮标状态
-    this.$store.dispatch('user/getControlInfo', {
-      ...this.$data.sdkOptions
-    });
     this.postMessage({
       action: 'loginSuccess',
       datas: this.$store.getters['user/sdkUserInfo']
     });
+    // 登录平台后，获取控制中心小浮标状态
+    this.$store.dispatch('user/getControlInfo', {
+      ...this.$data.sdkOptions
+    });
+    this.getGiftsList();
   }
   // 游戏内支付
   private goPay(params: {
@@ -654,6 +669,55 @@ export default class Scenes extends Vue {
         this.showToast(err.message);
       });
   }
+  // 获取礼包列表
+  private getGiftsList() {
+    const gamerInfo = this.$store.getters['user/gamerInfo'];
+    get(`${cqApi}/lqhy/listGift`, {
+      datas: {
+        uid: gamerInfo.userId
+      }
+    }).then((res: { data: [{ id: string; name: string; desc: string; status: number }] }) => {
+      this.$data.gameDatas = {
+        ...this.$data.gameDatas,
+        gifts: res.data
+      };
+    });
+  }
+  // 领取礼包
+  private getGift(id: string) {
+    if (!id) {
+      return this.showToast('参数错误');
+    }
+    this.updateLoading(true);
+    const gamerInfo = this.$store.getters['user/gamerInfo'];
+    get(`${cqApi}/lqhy/getGift`, {
+      datas: {
+        uid: gamerInfo.userId,
+        id
+      }
+    })
+      .then((res: { data: { card: string } }) => {
+        this.updateLoading(false);
+        const { card } = res.data;
+        const { gameDatas } = this.$data;
+        const { gifts } = gameDatas;
+        this.$data.card = card;
+        this.$data.showCard = true;
+        this.$data.gameDatas = {
+          ...gameDatas,
+          gifts: gifts.map((item: { id: string; status: number }) => {
+            if (item.id === id) {
+              item.status = 1;
+            }
+            return item;
+          })
+        };
+      })
+      .catch((err: { message: string }) => {
+        this.updateLoading(false);
+        this.showToast(err.message);
+      });
+  }
   // 用户中心控制面板
   private showCenter() {
     // 判断是否登录平台
@@ -703,6 +767,9 @@ export default class Scenes extends Vue {
         const { infos } = this.$data.gameDatas;
         this.$data.article = infos[params];
         this.$data.showArticle = true;
+        break;
+      case 'gift':
+        this.getGift(params);
         break;
     }
   }
@@ -799,47 +866,47 @@ export default class Scenes extends Vue {
       if (obj.hasOwnProperty(key) && obj[key] === min) {
         switch (key) {
           case 'left':
-            left = -20;
+            left = -10;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
-              right: '0',
-              left: 'auto',
+              right: 'auto',
+              left: '30px',
               bottom: 'auto',
-              margin: 'unset'
+              transform: 'unset'
             };
             break;
           case 'top':
-            top = -20;
+            top = -10;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               left: '50%',
               top: 'auto',
               right: 'auto',
               bottom: '0',
-              margin: '0 0 0 -50%'
+              transform: 'translateX(-50%)'
             };
             break;
           case 'bottom':
-            top = screenHeight - 20;
+            top = screenHeight - 30;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
               left: '50%',
               right: 'auto',
               bottom: 'auto',
-              margin: '0 0 0 -50%'
+              transform: 'translateX(-50%)'
             };
             break;
           case 'right':
-            left = screenWidth - 20;
+            left = screenWidth - 30;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
-              left: '0',
-              right: 'auto',
+              left: 'auto',
+              right: '30px',
               bottom: 'auto',
-              margin: 'unset'
+              transform: 'unset'
             };
             break;
         }
@@ -866,32 +933,20 @@ export default class Scenes extends Vue {
         webkitTransition: 'all .3s ease'
       };
     }
-    this.controlAutoOpacity();
   }
   private controlDragResize() {
     this.$data.controlDragStyle = {
       zIndex: '10',
       top: '13%',
-      right: '-20px',
-      opacity: '.45'
+      right: '-10px'
     };
     this.$data.controlBadgeStyle = {
       top: '0',
-      left: '0',
-      right: 'auto',
+      left: 'auto',
+      right: '30px',
       bottom: 'auto',
-      margin: 'unset'
+      transform: 'unset'
     };
-  }
-  // 小浮标自动半显示
-  private controlAutoOpacity() {
-    controlOpacityTimer = window.setTimeout(() => {
-      const { controlDragStyle } = this.$data;
-      this.$data.controlDragStyle = {
-        ...controlDragStyle,
-        opacity: '.45'
-      };
-    }, 5000);
   }
   // 显示隐藏领取的礼包弹窗
   private toggleCard() {
@@ -899,13 +954,17 @@ export default class Scenes extends Vue {
   }
 
   // lifecycles
+  private beforeCreate() {
+    clipboard();
+  }
   private created() {
     this.$store.commit({
       type: UPDATELOAD,
       data: true
     });
-    const { gid, openId, aid, device_type } = this.$route.query;
-    if (isWx && (!openId || openId === '0')) {
+    const { gid, aid, device_type } = this.$route.query;
+    const userInfo = this.$store.getters['user/userInfo'];
+    if (isWx && (!userInfo.openid || userInfo.openid === '0')) {
       return (window.location.href = `/user/scenes?gid=${gid}`);
     }
     this.$data.sdkOptions = {
@@ -913,7 +972,7 @@ export default class Scenes extends Vue {
       app_id: gid || '',
       aid: aid || '',
       Aid: aid || '',
-      openid: openId || '0'
+      openid: userInfo.openid || '0'
     };
     this.$data.deviceType = device_type || '';
     this.$data.loginFrom = getStorage(accountType);
@@ -921,7 +980,6 @@ export default class Scenes extends Vue {
       this.getStorageGamerInfo(gid as string);
       try {
         this.getInitData();
-        clipboard();
       } catch (err) {
         alert(err.message);
       }
@@ -932,19 +990,6 @@ export default class Scenes extends Vue {
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
     fixFormBug();
-    this.controlAutoOpacity();
-    // 设置分享
-    const { gid } = this.$route.query;
-    initWXJSSDK({
-      title: '梦幻逍遥游',
-      desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
-      link: `${window.location.origin}/user/scenes?gid=${gid}`,
-      imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
-    }).then((res: any) => {
-      this.postMessage({
-        action: 'shareComplete'
-      });
-    });
   }
 }
 </script>
@@ -969,13 +1014,13 @@ body,
   position: relative;
   width: 40px;
   height: 40px;
-  overflow: hidden;
   background: url('../assets/scenes/control.png') center no-repeat;
   background-size: contain;
   .hy-badge {
     position: absolute;
     top: 0;
-    left: 0;
+    left: auto;
+    right: 30px;
     text-align: center;
     transition: all 0.3s ease;
   }
@@ -1004,9 +1049,9 @@ body,
 }
 .clipboard {
   flex: 1;
-  height: 40px;
-  line-height: 40px;
-  font-size: 15px;
+  height: 48px;
+  line-height: 48px;
+  font-size: 16px;
   text-align: center;
   color: #018ffd;
 }

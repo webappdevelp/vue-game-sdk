@@ -1,38 +1,47 @@
 <template>
   <div class="hy-gifts">
-    <div class="hy-gifts-empty">
-      暂无礼包相关信息哦~
-    </div>
-    <template v-if="!!datas.length">
-      <div class="hy-gift-item">
+    <div v-if="!datas.gifts || !datas.gifts.length" class="hy-gifts-empty">暂无礼包相关信息哦~</div>
+    <template v-else>
+      <div
+        class="hy-gift-item"
+        v-for="(item, index) in datas.gifts"
+        :key="index"
+      >
         <div>
-          <h3>大天使之剑H5新手礼包</h3>
-          <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.desc }}</p>
         </div>
-        <btn text="领取" />
-      </div>
-      <div class="hy-gift-item">
-        <div>
-          <h3>大天使之剑H5新手礼包</h3>
-          <p>礼包内容：灵魂宝石*3 ，祝福宝石*10，玛雅宝石*1 ，2倍经验药水*1，钻石*50</p>
-        </div>
-        <btn text="领取" />
+        <btn
+          :text="item.status === 1 ? '查看' : '领取'"
+          @click="action(item.id)"
+        />
       </div>
     </template>
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator';
-import Btn from '../../Btn.vue';
+import { Vue, Component, Prop, Emit } from 'vue-property-decorator';
+import Btn from '@/components/Btn.vue';
 @Component({
   components: {
     Btn
   }
 })
 export default class HyCenterGifts extends Vue {
-  private data() {
+  @Prop({
+    type: Object,
+    default: () => {
+      return {};
+    }
+  })
+  private datas!: object;
+
+  // methods
+  @Emit()
+  private action(id: string) {
     return {
-      datas: []
+      action: 'gift',
+      params: id
     };
   }
 }
@@ -61,7 +70,7 @@ export default class HyCenterGifts extends Vue {
     }
     h3 {
       position: relative;
-      padding-left: 20px;
+      padding-left: 16px;
       margin-bottom: 5px;
       font-size: 14px;
       line-height: 1.5;
@@ -71,10 +80,9 @@ export default class HyCenterGifts extends Vue {
         position: absolute;
         top: 50%;
         left: 0;
-        width: 15px;
-        height: 15px;
-        background: url('../../../assets/scenes/center/icon-game-gift.png')
-          center no-repeat;
+        width: 12px;
+        height: 12px;
+        background: url('../../../assets/scenes/center/icon-game-gift.png') center no-repeat;
         background-size: contain;
         transform: translate3d(0, -50%, 0);
       }
@@ -94,6 +102,18 @@ export default class HyCenterGifts extends Vue {
       line-height: 32px;
       font-size: 12px;
       border-radius: 4px;
+    }
+  }
+}
+@media screen and (max-width: 320px) {
+  .hy-gifts {
+    .hy-gift-item {
+      div {
+        width: 72%;
+      }
+      h3 {
+        font-size: 13px;
+      }
     }
   }
 }

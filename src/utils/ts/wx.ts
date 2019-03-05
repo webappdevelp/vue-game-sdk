@@ -82,6 +82,9 @@ export function initWXJSSDK(params?: ShareParams) {
           });
           if (window.wx.ready && params) {
             window.wx.ready(() => {
+              /* window.wx.hideMenuItems({
+                menuList: ['menuItem:copyUrl']
+              }); */
               window.wx.onMenuShareAppMessage({
                 ...params,
                 success: resolve
@@ -114,7 +117,7 @@ interface PayInfo {
   signType: string;
   paySign: string;
 }
-export function wxJSSDKPay(params: PayInfo): Promise<{errMsg: string }> {
+export function wxJSSDKPay(params: PayInfo): Promise<{ errMsg: string }> {
   return new Promise((resolve, reject) => {
     if (window.wx && window.wx.chooseWXPay) {
       window.wx.chooseWXPay({

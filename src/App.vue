@@ -98,7 +98,7 @@ export default class App extends Vue {
   // lifecycles
   private created() {
     let gid = getQuery('gid');
-    let openid = getQuery('openId');
+    let openid = getCookie('openid');
     gid = gid || '0';
     openid = openid || '0';
     this.getStorageUserInfo(gid, openid);

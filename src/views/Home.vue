@@ -20,7 +20,7 @@ export default class Home extends Vue {
   }
 
   // lifecycles
-  private created() {
+  private beforeCreate() {
     clipboard();
   }
 }

@@ -24,6 +24,9 @@ interface Window {
       jsApiList: string[];
     }) => void;
     ready: (cb: () => void) => void;
+    hideMenuItems: (params: {
+      menuList: string[]
+    }) => void;
     onMenuShareAppMessage: (params: {
       title: string;
       desc: string;

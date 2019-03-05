@@ -1,5 +1,5 @@
 // 渠道号
-export const channelId = 190;
+export const channelId = 154;
 
 // api 账号接口
 export const api = '//api.gaoruifa.cn';

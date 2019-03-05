@@ -25,11 +25,11 @@ export default class HyBadge extends Vue {
   min-width: 15px;
   height: 15px;
   line-height: 1;
-  padding: 1px 0 0;
+  padding: 2px 2px 0;
   font-size: 12px;
   color: #fff;
   background: #e73c00;
-  border-radius: 50%;
+  border-radius: 3px;
   box-sizing: border-box;
   overflow: hidden;
   white-space: nowrap;
