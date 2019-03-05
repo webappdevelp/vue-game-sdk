@@ -14,6 +14,16 @@ function sendPost(url: string, params: any = {}) {
   });
 }
 
+// 设备初始化
+export function deviceInit(params: {
+  app: string;
+  app_id: string;
+  brand_desc?: string;
+  imei: string;
+}) {
+  return sendPost('/hy/init', params);
+}
+
 // 检查用户是否存在
 export function checkUser(username: string) {
   return sendPost('/user/getinfo', {

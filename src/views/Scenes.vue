@@ -100,7 +100,7 @@ import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/st
 import { mapState } from 'vuex';
 import { cqApi, gamerStorageName, accountType } from '@/config';
 import { get } from '@/utils/ts/fetch';
-import { deviceInit } from '@/api/u9api';
+import { deviceInit } from '@/api/api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
 import { getCookie } from '@/utils/ts/cookies';
