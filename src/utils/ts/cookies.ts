@@ -1,4 +1,4 @@
-export function setCookie(name: string, value: string, days: number = 7) {
+export function setCookie(name: string, value: string, days: number = 365) {
   const t = new Date();
   t.setTime(t.getTime() + days * 24 * 60 * 60 * 1000);
   document.cookie =

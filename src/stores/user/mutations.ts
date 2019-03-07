@@ -1,5 +1,5 @@
 import { userStorageName, gamerStorageName, expireDays } from '@/config';
-import { setStorage, delStorage } from '@/utils/ts/storage';
+import { setCookie, delCookie } from '@/utils/ts/cookies';
 import {
   UPDATEUSERINFO,
   UPDATEUSERACTION,
@@ -20,9 +20,9 @@ const mutations = {
 
     state.userAction = data.action || '';
     if (data.action === 'logined') {
-      setStorage(
+      setCookie(
         `${userStorageName}${state.userInfo.appid || ''}`,
-        state.userInfo,
+        JSON.stringify(state.userInfo),
         expireDays
       );
     }
@@ -44,9 +44,9 @@ const mutations = {
     };
     state.gamerAction = data.action || '';
     if (data.action === 'logined') {
-      setStorage(
+      setCookie(
         `${gamerStorageName}-${state.userInfo.uid}-${data.data.appId}`,
-        state.gamerInfo,
+        JSON.stringify(state.gamerInfo),
         expireDays
       );
     }
@@ -59,15 +59,16 @@ const mutations = {
   },
   // 删除保存的用户信息: 先删除与其相关的游戏玩家信息，再删除用户信息
   [DELUSERINFO](state: any) {
-    const reg = new RegExp(`${gamerStorageName}-${state.userInfo.uid}`);
+    /* const reg = new RegExp(`${gamerStorageName}-${state.userInfo.uid}`);
     for (const key in window.localStorage) {
       if (window.localStorage.hasOwnProperty(key) && reg.test(key)) {
         delStorage(key);
       }
-    }
+    } */
+    delCookie(`${gamerStorageName}-${state.userInfo.uid}-${state.gamerInfo.appId}`);
     state.gamerInfo = {};
     state.gamerAction = 'logOut';
-    delStorage(`${userStorageName}${state.userInfo.appid || ''}`);
+    delCookie(`${userStorageName}${state.userInfo.appid || ''}`);
     state.userInfo = {};
     state.userAction = 'logOut';
     state.userAppInfo = {};

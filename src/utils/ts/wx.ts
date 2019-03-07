@@ -85,6 +85,12 @@ export function initWXJSSDK(params?: ShareParams) {
               /* window.wx.hideMenuItems({
                 menuList: ['menuItem:copyUrl']
               }); */
+              /* window.wx.updateAppMessageShareData({
+                ...params
+              });
+              window.wx.updateTimelineShareData({
+                ...params
+              }); */
               window.wx.onMenuShareAppMessage({
                 ...params,
                 success: resolve

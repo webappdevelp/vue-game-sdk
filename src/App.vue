@@ -11,7 +11,7 @@ import { Component, Vue, Mixins } from 'vue-property-decorator';
 import Loading from '@/components/Loading.vue';
 import Toast from '@/components/Toast.vue';
 import { mapState } from 'vuex';
-import { getStorage } from '@/utils/ts/storage';
+// import { getStorage } from '@/utils/ts/storage';
 import { getCookie } from '@/utils/ts/cookies';
 import getQuery from '@/utils/ts/getQuery';
 import { userStorageName } from '@/config';
@@ -33,7 +33,7 @@ export default class App extends Vue {
   // methods
   private getStorageUserInfo(gid: string, openid: string) {
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeUserInfo = getStorage(`${userStorageName}${gid}`);
+    const storeUserInfo = JSON.parse(getCookie(`${userStorageName}${gid}`) || '{}');
     let defaultUserInfo: {
       token?: string;
       uid?: number;

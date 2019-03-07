@@ -109,24 +109,24 @@ export default class HyScenesModal extends Vue {
   from {
     opacity: 0;
     visibility: hidden;
-    transform: translate3d(120%, -50%, 0);
+    transform: translate(120%, -50%);
   }
   to {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, -50%, 0);
+    transform: translate(0, -50%);
   }
 }
 @keyframes rightOut {
   from {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, -50%, 0);
+    transform: translate(0, -50%);
   }
   to {
     opacity: 0;
     visibility: hidden;
-    transform: translate3d(120%, -50%, 0);
+    transform: translate(120%, -50%);
   }
 }
 
@@ -134,30 +134,30 @@ export default class HyScenesModal extends Vue {
   animation: leftIn 0.3s;
 }
 .left-leave-active {
-  animation: leftIn 0.3s reverse;
+  animation: leftOut 0.3s;
 }
 @keyframes leftIn {
   from {
     opacity: 0;
     visibility: hidden;
-    transform: translate3d(-120%, 0, 0);
+    transform: translate(-120%, 0);
   }
   to {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, 0, 0);
+    transform: translate(0, 0);
   }
 }
 @keyframes leftOut {
   from {
     opacity: 1;
     visibility: visible;
-    transform: translate3d(0, 0, 0);
+    transform: translate(0, 0);
   }
   to {
     opacity: 0;
     visibility: hidden;
-    transform: translate3d(-120%, 0, 0);
+    transform: translate(-120%, 0);
   }
 }
 </style>

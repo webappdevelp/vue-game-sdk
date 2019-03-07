@@ -14,8 +14,8 @@ import { UPDATETOAST, UPDATELOAD } from '@/stores/types';
 import md5 from 'md5';
 import { post } from '@/utils/ts/fetch';
 import { cqApi, gamerStorageName } from '@/config';
-import { deviceInit } from '@/api/u9api';
-import { getStorage, setStorage } from '@/utils/ts/storage';
+import { deviceInit, getCode } from '@/api/api';
+import { getCookie, setCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import clipboard from '@/utils/ts/clipboard';
 let lock: boolean = false;
@@ -71,7 +71,7 @@ export default class XiaoyaoyouGift extends Vue {
   // 初始化设备
   private init() {
     const { openid } = this.$data.sdkOptions;
-    const deviceImei = getStorage('device');
+    const deviceImei = JSON.parse(getCookie('device') || '{}');
     const storageImei = (deviceImei && deviceImei.imei) || '0';
     deviceInit({
       ...this.$data.sdkOptions,
@@ -86,7 +86,7 @@ export default class XiaoyaoyouGift extends Vue {
             device
           };
           if (!(deviceImei && deviceImei.imei)) {
-            setStorage('device', { imei });
+            setCookie('device', JSON.stringify({ imei }));
           }
         }
         this.goLogin();
@@ -98,7 +98,7 @@ export default class XiaoyaoyouGift extends Vue {
   // 登录
   private goLogin() {
     const userInfo = this.$store.getters['user/userInfo'];
-    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${userInfo.app}`);
+    const storeGamerInfo = JSON.parse(getCookie(`${gamerStorageName}-${userInfo.uid}-${userInfo.app}`) || '{}');
     if (!!userInfo.uid && !!userInfo.token  && !!storeGamerInfo.userId) {
       this.getCard(storeGamerInfo.userId);
     } else {
@@ -116,7 +116,7 @@ export default class XiaoyaoyouGift extends Vue {
     if (!isWx) {
       return this.showToast('请使在微信内打开哦');
     }
-    const storageCard = getStorage('card');
+    const storageCard = getCookie('card');
     if (storageCard) {
       return this.$data.card = storageCard;
     }
@@ -139,7 +139,7 @@ export default class XiaoyaoyouGift extends Vue {
         this.updateLoading(false);
         const { card } = res.data;
         this.$data.card = card || '';
-        setStorage('card', card);
+        setCookie('card', card);
       })
       .catch((err: { message: string }) => {
         lock = false;
@@ -162,13 +162,13 @@ export default class XiaoyaoyouGift extends Vue {
     clipboard();
   }
   private created() {
-    const { openId, gid } = this.$route.query;
+    const { gid } = this.$route.query;
     const { sdkOptions, style } = this.$data;
     this.$data.sdkOptions = {
       ...sdkOptions,
       app: gid,
       app_id: gid,
-      openid: openId
+      openid: getCookie('openid') || '0'
     };
     if (!isWx) {
       this.showToast('请使在微信内打开哦');

@@ -32,7 +32,7 @@ export default class ClipBoard extends Vue {
       });
       clipboard.on('error', () => {
         this.showToast('复制失败');
-      })
+      });
     } else {
       this.showToast('缺少ClipBoard支持');
     }

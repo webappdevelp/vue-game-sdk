@@ -6,7 +6,8 @@
         class="hy-info-item"
         v-for="(item, index) in datas.infos"
         :key="index"
-        @click="action(index)">
+        @click="action(index)"
+      >
         <template v-if="!!item.tags">
           <Tag v-for="(tag, id) in item.tags" :key="id" :text="tag.text" :color="tag.color"/>
         </template>
@@ -39,7 +40,7 @@ export default class HyCenterInfos extends Vue {
     return {
       action: 'article',
       params: id
-    }
+    };
   }
 }
 </script>

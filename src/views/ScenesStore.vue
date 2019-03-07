@@ -78,8 +78,9 @@
 <script lang="ts">
 let hyPSMSource: any = null;
 let hyPSMOrigin: string = '';
+let controlOpacityTimer: any = null;
 const dwladsApps: string[] = ['10147'];
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Mixins } from 'vue-property-decorator';
 import HyCenter from '@/components/scenes/Center.vue';
 import AccountManger from '@/components/scenes/AccountManger.vue';
 import DownloadAds from '@/components/scenes/DownloadAds.vue';
@@ -101,8 +102,8 @@ import { cqApi, gamerStorageName, accountType, channelId } from '@/config';
 import { get } from '@/utils/ts/fetch';
 import { deviceInit } from '@/api/api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
-// import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
-import { getCookie, setCookie, delCookie } from '@/utils/ts/cookies';
+import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
+import { getCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import { initWXJSSDK, wxJSSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
@@ -149,6 +150,7 @@ const defaultKeFu = {
 };
 
 @Component({
+  // mixins: [Dragtest],
   components: {
     HyDrag,
     Badge,
@@ -235,8 +237,7 @@ export default class Scenes extends Vue {
         app: '',
         app_id: '',
         openid: '',
-        device: '',
-        sdk_version: '2'
+        device: ''
       },
       gameDatas: {
         id: '',
@@ -311,7 +312,7 @@ export default class Scenes extends Vue {
   private getStorageGamerInfo(gid: string) {
     const userInfo = this.$store.getters['user/userInfo'];
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeGamerInfo = JSON.parse(getCookie(`${gamerStorageName}-${userInfo.uid}-${gid}`) || '{}');
+    const storeGamerInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${gid}`);
     let defaultGamerInfo: { appId: string; userId: string } = {
       appId: gid,
       userId: ''
@@ -494,7 +495,7 @@ export default class Scenes extends Vue {
     hyPSMSource = (this.$refs.gameWindow as HTMLIFrameElement).contentWindow;
     // 游戏加载成功后即开始设备初始化操作
     const { openid } = this.$data.sdkOptions;
-    const deviceImei = JSON.parse(getCookie('device') || '{}');
+    const deviceImei = getStorage('device');
     const storageImei = (deviceImei && deviceImei.imei) || '0';
     deviceInit({
       ...this.$data.sdkOptions,
@@ -510,22 +511,22 @@ export default class Scenes extends Vue {
             device
           };
           if (!(deviceImei && deviceImei.imei)) {
-            setCookie('device', JSON.stringify({ imei }));
+            setStorage('device', { imei });
           }
         }
         // sdk 开始初始化通讯操作
-        this.postMessage({
+        /* this.postMessage({
           action: 'init',
           datas: this.$store.getters['user/sdkUserInfo']
-        });
+        }); */
       })
       .catch((err: { message: string }) => {
         this.updateLoading(false);
         this.showToast(err.message);
         // sdk 开始初始化通讯操作
-        this.postMessage({
+        /* this.postMessage({
           action: 'init'
-        });
+        }); */
       });
   }
   // 登录面板按钮交互
@@ -758,9 +759,9 @@ export default class Scenes extends Vue {
       case 'logOut':
         this.$data.center = false;
         if (isWx && !loginFrom) {
-          setCookie(accountType, 'username');
+          setStorage(accountType, 'username');
         } else if (isWx) {
-          delCookie(accountType);
+          delStorage(accountType);
         }
         this.$store.dispatch('user/logOut');
         break;
@@ -833,6 +834,10 @@ export default class Scenes extends Vue {
       transition: 'unset',
       webkitTransition: 'unset'
     };
+    if (controlOpacityTimer) {
+      window.clearTimeout(controlOpacityTimer);
+      controlOpacityTimer = null;
+    }
   }
   private controlDragMove(params: { movedX: number; movedY: number }) {
     const { controlDragStyle } = this.$data;
@@ -965,7 +970,6 @@ export default class Scenes extends Vue {
       return (window.location.href = `/user/scenes?gid=${gid}`);
     }
     this.$data.sdkOptions = {
-      ...this.$data.sdkOptions,
       app: gid || '',
       app_id: gid || '',
       aid: aid || '',
@@ -973,7 +977,7 @@ export default class Scenes extends Vue {
       openid: userInfo.openid || '0'
     };
     this.$data.deviceType = device_type || '';
-    this.$data.loginFrom = getCookie(accountType);
+    this.$data.loginFrom = getStorage(accountType);
     if (!!gid && gid !== '0') {
       this.getStorageGamerInfo(gid as string);
       try {
