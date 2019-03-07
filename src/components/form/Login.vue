@@ -167,7 +167,9 @@ export default class HyScenesLogin extends Vue {
   }
   &--error {
     position: absolute;
+    z-index: 2;
     top: 30px;
+    left: 0;
     padding-top: 5px;
     font-size: 11px;
     color: #e73c00;

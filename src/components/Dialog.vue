@@ -1,9 +1,9 @@
 <template>
   <div class="hy-dialog">
-    <transition name="fade" type="animation" mode="out-in">
+    <transition name="fade" type="animation">
       <div v-if="show" ref="bg" class="hy-dialog-bg" :style="bgStyle" @click="close"></div>
     </transition>
-    <transition :name="animate" type="animation" mode="out-in">
+    <transition :name="animate" type="animation">
       <template v-if="show">
         <slot :scope="{frontStyle}"></slot>
       </template>

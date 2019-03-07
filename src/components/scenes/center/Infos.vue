@@ -81,8 +81,8 @@ export default class HyCenterInfos extends Vue {
       color: #999;
     }
   }
-  .hy-tag + .hy-tag {
-    margin-left: 5px;
+  .hy-tag {
+    margin-right: 5px;
   }
 }
 @media screen and (max-width: 320px) {
