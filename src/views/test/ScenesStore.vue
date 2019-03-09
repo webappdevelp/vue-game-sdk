@@ -146,7 +146,7 @@ const defaultKeFu = {
           <br>QQ客服：2814384213
           <br>客服电话：
           <a href="tel:020-86805149">020-86805149</a>`,
-  wx_qrcode: require('../assets/xiaoyaoyou/wx-qrcode.jpg')
+  wx_qrcode: require('../../assets/xiaoyaoyou/wx-qrcode.jpg')
 };
 
 @Component({
@@ -387,7 +387,7 @@ export default class Scenes extends Vue {
           title: '梦幻逍遥游',
           desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
           link: `${window.location.origin}/user/scenes?gid=${sdkOptions.app}`,
-          imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
+          imgUrl: `${window.location.origin}${require('../../assets/shareicon/xymy.png')}`
         }).then(() => {
           this.postMessage({
             action: 'shareComplete'
@@ -1016,7 +1016,7 @@ body,
   position: relative;
   width: 40px;
   height: 40px;
-  background: url('../assets/scenes/control.png') center no-repeat;
+  background: url('../../assets/scenes/control.png') center no-repeat;
   background-size: contain;
   .hy-badge {
     position: absolute;

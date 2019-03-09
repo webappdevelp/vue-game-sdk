@@ -94,6 +94,12 @@ export default class HyScenesArticle extends Vue {
     line-height: 2;
     text-indent: 24px;
     text-align: left;
+    img {
+      display: block;
+      margin: 0 auto;
+      width: 80%;
+      height: auto;
+    }
   }
 }
 </style>

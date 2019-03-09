@@ -1,9 +1,9 @@
 <template>
   <div class="hy-dialog">
-    <transition name="fade" type="animation">
+    <transition name="fade" type="animation" mode="out-in">
       <div v-if="show" ref="bg" class="hy-dialog-bg" :style="bgStyle" @click="close"></div>
     </transition>
-    <transition :name="animate" type="animation">
+    <transition :name="animate" type="animation" mode="out-in">
       <template v-if="show">
         <slot :scope="{frontStyle}"></slot>
       </template>
@@ -19,11 +19,13 @@ export default class HyScenesModal extends Vue {
     default: false
   })
   private show!: boolean;
+
   @Prop({
     type: String,
     default: 'fade'
   })
   private animate!: string;
+
   @Prop({
     type: String,
     default: '20'
@@ -77,10 +79,10 @@ export default class HyScenesModal extends Vue {
 }
 
 .fade-enter-active {
-  animation: fadeIn 0.2s;
+  animation: fadeIn 0.3s;
 }
 .fade-leave-active {
-  animation: fadeOut 0.2s;
+  animation: fadeOut 0.3s;
 }
 @keyframes fadeIn {
   from {
@@ -100,10 +102,10 @@ export default class HyScenesModal extends Vue {
 }
 
 .right-enter-active {
-  animation: rightIn 0.3s;
+  animation: rightIn 0.35s;
 }
 .right-leave-active {
-  animation: rightOut 0.3s;
+  animation: rightOut 0.35s;
 }
 @keyframes rightIn {
   from {
@@ -131,10 +133,10 @@ export default class HyScenesModal extends Vue {
 }
 
 .left-enter-active {
-  animation: leftIn 0.3s;
+  animation: leftIn 0.4s;
 }
 .left-leave-active {
-  animation: leftOut 0.3s;
+  animation: leftOut 0.4s;
 }
 @keyframes leftIn {
   from {

@@ -1,9 +1,8 @@
 import notFound from './notFound';
 import home from './home';
 import scenes from './scenes';
-import scenestore from './scenesStore';
 import xxyGift from './xyyGift';
-import drag from './drag';
+import test from './test';
 export default [
   notFound,
   {
@@ -11,7 +10,6 @@ export default [
     children: []
   },
   scenes,
-  scenestore,
-  drag,
-  xxyGift
+  xxyGift,
+  test
 ];

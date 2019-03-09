@@ -1,5 +1,5 @@
 const scenestore = () =>
-  import(/* webpackChunkName: "scenestore" */ '../views/ScenesStore.vue');
+  import(/* webpackChunkName: "scenestore" */ '../../views/test/ScenesStore.vue');
 export default {
   name: 'scenestore',
   path: '/scenestore',

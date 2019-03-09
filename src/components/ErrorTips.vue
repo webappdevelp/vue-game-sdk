@@ -10,7 +10,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 export default class HyErrorTip extends Vue {
   @Prop({
     type: String,
-    default: '404，出错了哦~'
+    default: '404，您访问的页面不存在~'
   })
   private msg!: string;
 }

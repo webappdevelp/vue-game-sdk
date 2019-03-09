@@ -70,8 +70,10 @@
       height="100%"
       width="100%"
       scrolling="auto"
+      allowtransparency="true"
+      allowfullscreen
       frameborder="0"
-      style="border: 0 none;"
+      style="border: 0 none;background: transparent;"
     ></iframe>
   </div>
 </template>
@@ -391,6 +393,14 @@ export default class Scenes extends Vue {
       const { sdkOptions, loginFrom } = this.$data;
       console.log(`${action}：hyCpSDK -> hySDK successed`);
       switch (action) {
+        case 'blur':
+          if (document.scrollingElement) {
+            document.scrollingElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+          break;
         case 'pay':
           this.goPay({
             cpOrderId: datas.cpOrderId || '',
@@ -956,6 +966,14 @@ export default class Scenes extends Vue {
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
     fixFormBug();
+    /* window.setInterval(() => {
+      if (document.scrollingElement) {
+          document.scrollingElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+    }, 1000); */
   }
 }
 </script>

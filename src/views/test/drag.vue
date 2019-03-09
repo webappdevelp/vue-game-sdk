@@ -2,7 +2,6 @@
   <div class="drag">
     <hy-drag
       :drag-style="controlDragStyle"
-      @click="showCenter"
       @drag-start="controlDragStart"
       @drag-move="controlDragMove"
       @drag-end="controlDragEnd"
@@ -111,7 +110,7 @@ export default class Drag extends Vue {
       zIndex: '10',
       top: '13%',
       right: '-10px'
-    }
+    };
   }
 }
 </script>
@@ -120,7 +119,7 @@ export default class Drag extends Vue {
   position: relative;
   width: 40px;
   height: 40px;
-  background: url('../assets/scenes/control.png') center no-repeat;
+  background: url('../../assets/scenes/control.png') center no-repeat;
   background-size: contain;
   .hy-badge {
     position: absolute;
