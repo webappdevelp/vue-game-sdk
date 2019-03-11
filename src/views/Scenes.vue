@@ -43,7 +43,7 @@
       @submit="changePassword"
     />
     <hy-article :show.sync="showArticle" :datas="article"/>
-    <hy-alert :show="showCard" z-index="40" title="领取提示">
+    <hy-alert :show.sync="showCard" :need-close="true" z-index="40" title="领取提示">
       <template slot="content">
         <div class="gift-card">
           <div class="gift-card-nums">
@@ -234,7 +234,7 @@ export default class Scenes extends Vue {
       },
       controlDragStyle: {
         zIndex: '10',
-        top: '13%',
+        top: '18%',
         right: '-10px'
       },
       controlBadgeStyle: {},
@@ -329,6 +329,7 @@ export default class Scenes extends Vue {
     const { sdkOptions } = this.$data;
     get(`${cqApi}/game/detail`, {
       datas: {
+        aid: sdkOptions.aid,
         gid: sdkOptions.app,
         channel: channelId
       }
@@ -440,6 +441,9 @@ export default class Scenes extends Vue {
           break;
         case 'initSuccess':
           console.log('SDK initSuccess');
+          if (!isWx && this.$store.getters['user/isLogin'] && this.$store.getters['user/isGameLogin']) {
+            this.getGiftsList();
+          }
           break;
         case 'login':
           // 假如在微信内，登录的控制只能由 sdk 自身来操作,或者存在弹窗的登录面板时，不继续操作
@@ -821,9 +825,9 @@ export default class Scenes extends Vue {
       top: `${movedY}px`
     };
   }
-  private controlDragEnd(params: { dragOffsetLeft: number; dragOffsetTop: number }) {
+  private controlDragEnd(params: { movedX: number; movedY: number; dragOffsetLeft: number; dragOffsetTop: number }) {
     const { controlDragStyle, controlBadgeStyle } = this.$data;
-    const { dragOffsetLeft, dragOffsetTop } = params;
+    const { dragOffsetLeft, dragOffsetTop, movedX, movedY } = params;
     const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
     const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
     const difX = screenWidth - dragOffsetLeft;
@@ -835,13 +839,14 @@ export default class Scenes extends Vue {
       bottom: difY
     };
     const min = Math.min(dragOffsetLeft, dragOffsetTop, difX, difY);
-    let left = 0;
-    let top = 0;
+    let left = movedX;
+    let top = movedY;
     for (const key in obj) {
       if (obj.hasOwnProperty(key) && obj[key] === min) {
         switch (key) {
           case 'left':
             left = -10;
+            top = top >= screenHeight - 30 ? screenHeight - 40 : top < 0 ? 0 : top;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
@@ -853,6 +858,7 @@ export default class Scenes extends Vue {
             break;
           case 'top':
             top = -10;
+            left = left >= screenWidth - 30 ? screenWidth - 40 : left < 0 ? 0 : left;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               left: '50%',
@@ -864,6 +870,7 @@ export default class Scenes extends Vue {
             break;
           case 'bottom':
             top = screenHeight - 30;
+            left = left >= screenWidth - 30 ? screenWidth - 40 : left < 0 ? 0 : left;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
@@ -875,6 +882,7 @@ export default class Scenes extends Vue {
             break;
           case 'right':
             left = screenWidth - 30;
+            top = top >= screenHeight - 30 ? screenHeight - 40 : top < 0 ? 0 : top;
             this.$data.controlBadgeStyle = {
               ...controlBadgeStyle,
               top: '0',
@@ -887,32 +895,21 @@ export default class Scenes extends Vue {
         }
       }
     }
-    if (left !== 0) {
-      this.$data.controlDragStyle = {
-        ...controlDragStyle,
-        left: `${left}px`,
-        right: 'auto',
-        bottom: 'auto',
-        willChange: 'auto',
-        transition: 'all .3s ease',
-        webkitTransition: 'all .3s ease'
-      };
-    } else {
-      this.$data.controlDragStyle = {
-        ...controlDragStyle,
-        top: `${top}px`,
-        right: 'auto',
-        bottom: 'auto',
-        willChange: 'auto',
-        transition: 'all .3s ease',
-        webkitTransition: 'all .3s ease'
-      };
-    }
+    this.$data.controlDragStyle = {
+      ...controlDragStyle,
+      left: `${left}px`,
+      top: `${top}px`,
+      right: 'auto',
+      bottom: 'auto',
+      willChange: 'auto',
+      transition: 'all .3s ease',
+      webkitTransition: 'all .3s ease'
+    };
   }
   private controlDragResize() {
     this.$data.controlDragStyle = {
       zIndex: '10',
-      top: '13%',
+      top: '18%',
       right: '-10px'
     };
     this.$data.controlBadgeStyle = {
@@ -966,14 +963,6 @@ export default class Scenes extends Vue {
   private mounted() {
     window.addEventListener('message', this.dispatchMessage);
     fixFormBug();
-    /* window.setInterval(() => {
-      if (document.scrollingElement) {
-          document.scrollingElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-    }, 1000); */
   }
 }
 </script>
@@ -1038,5 +1027,8 @@ body,
   font-size: 16px;
   text-align: center;
   color: #018ffd;
+  &:active {
+    background-color: #f5f5f5;
+  }
 }
 </style>
