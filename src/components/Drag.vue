@@ -41,12 +41,11 @@ export default class HyDrag extends Vue {
     } else {
       touch = event;
     }
-    const { clientX, clientY } = touch;
     const dragEl = this.$refs.drag as HTMLElement;
     const dragWidth = dragEl.clientWidth;
     const dragHeight = dragEl.clientHeight;
-    const movedX = dragEl.offsetLeft + dragWidth / 2;
-    const movedY = dragEl.offsetTop + dragHeight / 2;
+    const movedX = dragEl.offsetLeft;
+    const movedY = dragEl.offsetTop;
     this.$data.movedX = movedX;
     this.$data.movedY = movedY;
     this.$emit('drag-start', {
