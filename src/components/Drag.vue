@@ -12,6 +12,7 @@
 </template>
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
+
 @Component
 export default class HyDrag extends Vue {
   @Prop({
@@ -98,8 +99,8 @@ export default class HyDrag extends Vue {
   private mounted() {
     const drag = this;
     document.addEventListener('touchmove', drag.touchMove, { passive: false });
-    document.addEventListener('mousemove', drag.touchMove, { passive: false });
     document.addEventListener('touchend', drag.touchEnd, false);
+    document.addEventListener('mousemove', drag.touchMove, { passive: false });
     document.addEventListener('mouseup', drag.touchEnd, false);
     window.addEventListener(
       'resize',

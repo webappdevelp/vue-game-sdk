@@ -75,7 +75,7 @@
       allowtransparency="true"
       allowfullscreen
       frameborder="0"
-      style="border: 0 none;background: transparent;"
+      :style="iframeStyle"
     ></iframe>
   </div>
 </template>
@@ -241,6 +241,13 @@ export default class Scenes extends Vue {
       bindMobile: false,
       psw: false,
       accountActionType: '',
+      iframeStyle: {
+        borderWidth: 0,
+        borderColor: 'transparent',
+        borderStyle: 'none',
+        background: 'transparent',
+        pointerEvents: 'auto'
+      },
       wxTip: {
         show: false,
         msg: ''
@@ -868,21 +875,29 @@ export default class Scenes extends Vue {
   }
   // 拖拽功能
   private controlDragStart() {
-    const { controlDragStyle } = this.$data;
+    const { controlDragStyle, iframeStyle } = this.$data;
     this.$data.controlDragStyle = {
       ...controlDragStyle,
       opacity: '1',
       transition: 'unset',
       webkitTransition: 'unset'
     };
+    this.$data.iframeStyle = {
+      ...iframeStyle,
+      pointerEvents: 'none'
+    };
   }
   private controlDragMove(params: { movedX: number; movedY: number }) {
-    const { controlDragStyle } = this.$data;
+    const { controlDragStyle, iframeStyle } = this.$data;
     const { movedX, movedY } = params;
     this.$data.controlDragStyle = {
       ...controlDragStyle,
       left: `${movedX}px`,
       top: `${movedY}px`
+    };
+    this.$data.iframeStyle = {
+      ...iframeStyle,
+      pointerEvents: 'none'
     };
   }
   private controlDragEnd(params: {
@@ -891,7 +906,7 @@ export default class Scenes extends Vue {
     dragOffsetLeft: number;
     dragOffsetTop: number;
   }) {
-    const { controlDragStyle, controlBadgeStyle } = this.$data;
+    const { controlDragStyle, controlBadgeStyle, iframeStyle } = this.$data;
     const { dragOffsetLeft, dragOffsetTop, movedX, movedY } = params;
     const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
     const screenHeight = document.body.clientHeight || document.documentElement.clientHeight;
@@ -960,6 +975,10 @@ export default class Scenes extends Vue {
         }
       }
     }
+    this.$data.iframeStyle = {
+      ...iframeStyle,
+      pointerEvents: 'auto'
+    };
     this.$data.controlDragStyle = {
       ...controlDragStyle,
       left: `${left}px`,
