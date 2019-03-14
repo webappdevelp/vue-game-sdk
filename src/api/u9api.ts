@@ -39,6 +39,13 @@ export function login(params: {
   });
 }
 
+// 校验登录
+export function validateLogin(params: { UserId: string; Token: string }) {
+  return sendPost('/validateLogin/index', {
+    ...params
+  });
+}
+
 // 日志上报
 export function report(params: {
   device: number;

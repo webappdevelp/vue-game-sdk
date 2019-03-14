@@ -9,11 +9,11 @@
     </div>
     <div class="hy-kefu-content">
       <div class="hy-kefu-numbers">
-        <img :src="require('../../../assets/xiaoyaoyou/cusServiceImg.png')" alt>
+        <img :src="require('@/assets/scenes/center/cusServiceImg.png')" alt>
         <p v-html="datas.kefu.numbers"></p>
       </div>
       <div class="hy-kefu-qrcode">
-        <img :src="datas.kefu.wx_qrcode">
+        <img :src="datas.kefu.wxqrcode">
         <p>
           <strong>关注公众号</strong>
           <br>

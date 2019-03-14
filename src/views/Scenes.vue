@@ -1,5 +1,8 @@
 <template>
   <div class="scenes">
+    <div style="display: none;">
+      <img :src="gameDatas.kefu && gameDatas.kefu.wxqrcode" alt="微信二维码">
+    </div>
     <hy-drag
       v-if="!showControlDrag"
       :drag-style="controlDragStyle"
@@ -50,7 +53,7 @@
             <span>兑换码：</span>
             <p>{{ card }}</p>
           </div>
-          <div class="gift-card-tips">复制兑换码，去游戏中使用</div>
+          <div class="gift-card-tips">复制兑换码，20级在主城-福利大厅领取奖励</div>
         </div>
       </template>
       <template slot="footer">
@@ -59,7 +62,6 @@
     </hy-alert>
     <wx-to-browser :show.sync="wxTip.show" :msg="wxTip.msg"/>
     <download-ads v-if="showDwlAds" @action="centerAction"/>
-    <hy-error v-if="showControlDrag" msg="您访问的链接有问题哦~"/>
     <input type="hidden" name="userAction" :value="action">
     <iframe
       v-if="gameDatas.link !== ''"
@@ -93,29 +95,39 @@ import FastResult from '@/components/FastRegResult.vue';
 import WxToBrowser from '@/components/WxToBrowserTip.vue';
 import HyDrag from '@/components/Drag.vue';
 import Badge from '@/components/Badge.vue';
-import HyError from '@/components/ErrorTips.vue';
 import HyAlert from '@/components/Alert.vue';
 import ClipboardBtn from '@/components/ClipBoard.vue';
 import md5 from 'md5';
-import { UPDATETOAST, UPDATELOAD, UPDATEUSERACTION, UPDATEGAMERINFO } from '@/stores/types';
+import {
+  UPDATETOAST,
+  UPDATELOAD,
+  UPDATEUSERACTION,
+  UPDATEGAMERINFO,
+  UPDATEGAMERACTION
+} from '@/stores/types';
 import { mapState } from 'vuex';
-import { cqApi, gamerStorageName, accountType, channelId } from '@/config';
+import { cqApi, gamerStorageName, channelId } from '@/config';
 import { get } from '@/utils/ts/fetch';
 import { deviceInit } from '@/api/api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
-// import { getStorage, setStorage, delStorage } from '@/utils/ts/storage';
-import { getCookie, setCookie, delCookie } from '@/utils/ts/cookies';
+import { getCookie, setCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
 import { initWXJSSDK, wxJSSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
 import clipboard from '@/utils/ts/clipboard';
 import defaultInfos from '@/articles';
-const defaultKeFu = {
+const rang = Math.floor(Math.random() * 3);
+const shareDesc = [
+  '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
+  '不肝不氪，上线送ssr大圣，凑齐师徒四人，探寻最本真的西游取经乐趣',
+  'OMG！这游戏是疯了吧？这简直就是神级的回合手游，太好玩'
+];
+const defaultKeFu: any = {
   numbers: `QQ群：805453802
           <br>QQ客服：2814384213
           <br>客服电话：
           <a href="tel:020-86805149">020-86805149</a>`,
-  wx_qrcode: require('../assets/xiaoyaoyou/wx-qrcode.jpg')
+  wxqrcode: ''
 };
 
 @Component({
@@ -132,7 +144,6 @@ const defaultKeFu = {
     FastResult,
     WxToBrowser,
     DownloadAds,
-    HyError,
     HyAlert,
     ClipboardBtn
   },
@@ -189,9 +200,11 @@ const defaultKeFu = {
         }
         // 退出登录
         if (state.userAction === 'logOut') {
-          window.setTimeout(() => {
-            window.location.reload();
-          }, 2500);
+          this.resetAction();
+          this.postMessage({
+            action: 'logOut'
+          });
+          return (this.$data.login = true);
         }
         return state.userAction;
       }
@@ -248,7 +261,7 @@ export default class Scenes extends Vue {
     return !app || app === '0';
   }
   get fastBtnText() {
-    if (isWx && !!this.$data.loginFrom) {
+    if (isWx) {
       return '微信登录';
     }
     return '一键注册';
@@ -281,7 +294,9 @@ export default class Scenes extends Vue {
   private getStorageGamerInfo(gid: string) {
     const userInfo = this.$store.getters['user/userInfo'];
     const cookieUserInfo = JSON.parse(getCookie(`gm${gid}`) || 'null');
-    const storeGamerInfo = JSON.parse(getCookie(`${gamerStorageName}-${userInfo.uid}-${gid}`) || '{}');
+    const storeGamerInfo = JSON.parse(
+      getCookie(`${gamerStorageName}-${userInfo.uid}-${gid}`) || '{}'
+    );
     let defaultGamerInfo: { appId: string; userId: string } = {
       appId: gid,
       userId: ''
@@ -355,7 +370,7 @@ export default class Scenes extends Vue {
         // 处理微信分享
         initWXJSSDK({
           title: '梦幻逍遥游',
-          desc: '人人都玩，无处不在，不花一分钱还免费送VIP，家里没矿也能玩的手游',
+          desc: shareDesc[rang],
           link: `${window.location.origin}/user/scenes?gid=${sdkOptions.app}`,
           imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
         }).then(() => {
@@ -392,7 +407,9 @@ export default class Scenes extends Vue {
       cpDatas = cpDatas || {};
       const { action, datas } = cpDatas;
       const { sdkOptions, loginFrom } = this.$data;
+
       console.log(`${action}：hyCpSDK -> hySDK successed`);
+
       switch (action) {
         case 'blur':
           if (document.scrollingElement) {
@@ -440,9 +457,12 @@ export default class Scenes extends Vue {
           this.$store.dispatch('user/logOut');
           break;
         case 'initSuccess':
-          console.log('SDK initSuccess');
-          if (!isWx && this.$store.getters['user/isLogin'] && this.$store.getters['user/isGameLogin']) {
-            this.getGiftsList();
+          if (
+            !isWx &&
+            this.$store.getters['user/isLogin'] &&
+            this.$store.getters['user/isGameLogin']
+          ) {
+            this.validateLogin();
           }
           break;
         case 'login':
@@ -466,7 +486,7 @@ export default class Scenes extends Vue {
               data: 'logined'
             });
           }
-          this.playGame();
+          this.validateLogin();
           break;
       }
     }
@@ -508,6 +528,19 @@ export default class Scenes extends Vue {
         this.postMessage({
           action: 'init'
         });
+      });
+  }
+  // 校验用户登录
+  private validateLogin() {
+    this.$store
+      .dispatch('user/loginValidate')
+      .then(() => {
+        console.log('login validated');
+        this.playGame();
+      })
+      .catch(() => {
+        console.log('login failed');
+        this.$store.dispatch('user/logOut');
       });
   }
   // 登录面板按钮交互
@@ -557,7 +590,19 @@ export default class Scenes extends Vue {
     this.$store.dispatch('user/getControlInfo', {
       ...this.$data.sdkOptions
     });
+    this.resetAction();
     this.getGiftsList();
+  }
+  // 重置用户和游戏玩家操作手柄
+  private resetAction() {
+    this.$store.commit({
+      type: `user/${UPDATEUSERACTION}`,
+      data: ''
+    });
+    this.$store.commit({
+      type: `user/${UPDATEGAMERACTION}`,
+      data: ''
+    });
   }
   // 游戏内支付
   private goPay(params: {
@@ -664,6 +709,7 @@ export default class Scenes extends Vue {
         ...this.$data.gameDatas,
         gifts: res.data
       };
+      clipboard();
     });
   }
   // 领取礼包
@@ -740,9 +786,7 @@ export default class Scenes extends Vue {
       case 'logOut':
         this.$data.center = false;
         if (isWx && !loginFrom) {
-          setCookie(accountType, 'username');
-        } else if (isWx) {
-          delCookie(accountType);
+          this.$data.loginFrom = 'username';
         }
         this.$store.dispatch('user/logOut');
         break;
@@ -794,6 +838,14 @@ export default class Scenes extends Vue {
         })
         .then(() => {
           this.showAccount();
+          // 当平台登录的操作手柄存在时，自动登录游戏
+          this.$store.dispatch('user/loginGame', {
+            ...this.$data.sdkOptions
+          });
+          this.postMessage({
+            action: 'update',
+            datas: this.$store.getters['user/sdkUserInfo']
+          });
         });
     }
     return this.$store
@@ -804,6 +856,14 @@ export default class Scenes extends Vue {
       })
       .then(() => {
         this.showAccount();
+        // 当平台登录的操作手柄存在时，自动登录游戏
+        this.$store.dispatch('user/loginGame', {
+          ...this.$data.sdkOptions
+        });
+        this.postMessage({
+          action: 'update',
+          datas: this.$store.getters['user/sdkUserInfo']
+        });
       });
   }
   // 拖拽功能
@@ -825,7 +885,12 @@ export default class Scenes extends Vue {
       top: `${movedY}px`
     };
   }
-  private controlDragEnd(params: { movedX: number; movedY: number; dragOffsetLeft: number; dragOffsetTop: number }) {
+  private controlDragEnd(params: {
+    movedX: number;
+    movedY: number;
+    dragOffsetLeft: number;
+    dragOffsetTop: number;
+  }) {
     const { controlDragStyle, controlBadgeStyle } = this.$data;
     const { dragOffsetLeft, dragOffsetTop, movedX, movedY } = params;
     const screenWidth = document.body.clientWidth || document.documentElement.clientWidth;
@@ -926,9 +991,6 @@ export default class Scenes extends Vue {
   }
 
   // lifecycles
-  private beforeCreate() {
-    clipboard();
-  }
   private created() {
     this.$store.commit({
       type: UPDATELOAD,
@@ -939,6 +1001,7 @@ export default class Scenes extends Vue {
     if (isWx && (!userInfo.openid || userInfo.openid === '0')) {
       return (window.location.href = `/user/scenes?gid=${gid}`);
     }
+    defaultKeFu.wxqrcode = require(`@/assets/wxqrcode/${gid}/qrcode.jpg`);
     this.$data.sdkOptions = {
       ...this.$data.sdkOptions,
       app: gid || '',
@@ -948,7 +1011,6 @@ export default class Scenes extends Vue {
       openid: userInfo.openid || '0'
     };
     this.$data.deviceType = device_type || '';
-    this.$data.loginFrom = getCookie(accountType);
     if (!!gid && gid !== '0') {
       this.getStorageGamerInfo(gid as string);
       try {

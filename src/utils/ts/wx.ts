@@ -27,7 +27,7 @@ const jsApiList = [
 function importWxSDK() {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = '//res2.wx.qq.com/open/js/jweixin-1.4.0.js';
+    script.src = '//res2.wx.qq.com/open/js/jweixin-1.2.0.js';
     (document.querySelector('head') as HTMLElement).append(script);
     script.onload = resolve;
     script.onerror = reject;

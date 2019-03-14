@@ -18,7 +18,7 @@ import {
   resetPassword,
   updatePassword
 } from '@/api/api';
-import { login as gameLogin, report } from '@/api/u9api';
+import { login as gameLogin, validateLogin, report } from '@/api/u9api';
 const actions = {
   // 登录平台
   login: (
@@ -159,7 +159,7 @@ const actions = {
                 );
               });
           })
-          .catch((err) => {
+          .catch(err => {
             commit(
               {
                 type: UPDATELOAD,
@@ -245,6 +245,20 @@ const actions = {
         );
       });
   },
+  // 校验登录
+  loginValidate({ state, dispatch }: { state: any; dispatch: any }) {
+    const { userInfo, gamerInfo } = state;
+    const { token } = userInfo;
+    const { userId } = gamerInfo;
+    return new Promise((resolve, reject) => {
+      validateLogin({
+        Token: token,
+        UserId: userId
+      })
+        .then(resolve)
+        .catch(reject);
+    });
+  },
   // 日志上报
   logReport: (
     { commit }: { commit: any },
@@ -295,13 +309,13 @@ const actions = {
           type: UPDATEUSERACTION,
           data: 'logOut'
         });
-        commit(
+        /* commit(
           {
             type: UPDATETOAST,
             data: '退出成功'
           },
           { root: true }
-        );
+        ); */
         commit(
           {
             type: UPDATELOAD,
@@ -360,13 +374,13 @@ const actions = {
           resolve();
         })
         .catch((err: { message: string }) => {
-          commit(
+          /* commit(
             {
               type: UPDATETOAST,
               data: err.message
             },
             { root: true }
-          );
+          ); */
         });
     });
   },

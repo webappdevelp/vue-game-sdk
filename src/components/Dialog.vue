@@ -74,6 +74,7 @@ export default class HyScenesModal extends Vue {
     left: 0;
     height: 100%;
     width: 100%;
+    will-change: auto;
     background: rgba(0, 0, 0, 0.45);
   }
 }

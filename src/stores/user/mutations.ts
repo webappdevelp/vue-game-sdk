@@ -4,6 +4,7 @@ import {
   UPDATEUSERINFO,
   UPDATEUSERACTION,
   UPDATEGAMERINFO,
+  UPDATEGAMERACTION,
   DELUSERINFO,
   UPDATEUSERAPPINFO
 } from '@/stores/types';
@@ -27,9 +28,13 @@ const mutations = {
       );
     }
   },
-  // 更新操作手柄
+  // 更新平台用户操作手柄
   [UPDATEUSERACTION](state: any, { data }: { data: string }) {
     state.userAction = data;
+  },
+  // 更新游戏用户操作手柄
+  [UPDATEGAMERACTION](state: any, { data }: { data: string }) {
+    state.gamerAction = data;
   },
   // 更新游戏玩家信息
   [UPDATEGAMERINFO](
@@ -59,17 +64,15 @@ const mutations = {
   },
   // 删除保存的用户信息: 先删除与其相关的游戏玩家信息，再删除用户信息
   [DELUSERINFO](state: any) {
-    /* const reg = new RegExp(`${gamerStorageName}-${state.userInfo.uid}`);
-    for (const key in window.localStorage) {
-      if (window.localStorage.hasOwnProperty(key) && reg.test(key)) {
-        delStorage(key);
-      }
-    } */
-    delCookie(`${gamerStorageName}-${state.userInfo.uid}-${state.gamerInfo.appId}`);
-    state.gamerInfo = {};
+    const { userInfo, gamerInfo } = state;
+    delCookie(`${gamerStorageName}-${userInfo.uid}-${gamerInfo.appId}`);
+    state.gamerInfo = { appId: gamerInfo.appId };
     state.gamerAction = 'logOut';
-    delCookie(`${userStorageName}${state.userInfo.appid || ''}`);
-    state.userInfo = {};
+    delCookie(`${userStorageName}${userInfo.appid || ''}`);
+    state.userInfo = {
+      appid: userInfo.appid,
+      openid: userInfo.openid
+    };
     state.userAction = 'logOut';
     state.userAppInfo = {};
   }

@@ -42,6 +42,7 @@ export default class HyModal extends Vue {
   width: 280px;
   padding: 0;
   background-color: #fff;
+  will-change: auto;
   transform: translate3d(0, -50%, 0);
   border-radius: 6px;
   box-sizing: border-box;

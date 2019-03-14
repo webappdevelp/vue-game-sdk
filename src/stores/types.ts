@@ -13,6 +13,9 @@ export const UPDATEUSERACTION = 'UPDATEACTION';
 // 更新玩家用户资料
 export const UPDATEGAMERINFO = 'UPDATEGAMERINFO';
 
+// 更新玩家资料操作手柄
+export const UPDATEGAMERACTION = 'UPDATEGAMERINFO';
+
 // 删除保存的用户资料
 export const DELUSERINFO = 'DELUSERINFO';
 
