@@ -360,13 +360,13 @@ export default class Scenes extends Vue {
           id: sdkOptions.app,
           name: title,
           origin: cp_origin,
-          link: 'https://m.shop.com', //cp_url,
+          link: cp_url,
           infos: defaultInfos,
           kefu: {
             ...defaultKeFu
           }
         };
-        hyPSMOrigin = 'https://m.shop.com';  //cp_origin;
+        hyPSMOrigin = cp_origin;
         // 处理微信分享
         initWXJSSDK({
           title: '梦幻逍遥游',

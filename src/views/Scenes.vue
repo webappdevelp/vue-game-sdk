@@ -201,6 +201,10 @@ const defaultKeFu: any = {
         // 退出登录
         if (state.userAction === 'logOut') {
           this.resetAction();
+          this.$data.gameDatas = {
+            ...this.$data.gameDatas,
+            gifts: null
+          };
           this.postMessage({
             action: 'logOut'
           });
@@ -378,7 +382,7 @@ export default class Scenes extends Vue {
         initWXJSSDK({
           title: '梦幻逍遥游',
           desc: shareDesc[rang],
-          link: `${window.location.origin}/user/scenes?gid=${sdkOptions.app}`,
+          link: `${window.location.origin}/user/scenes?${window.location.href.split('?')[1]}`,
           imgUrl: `${window.location.origin}${require('../assets/shareicon/xymy.png')}`
         }).then(() => {
           this.postMessage({
@@ -1025,8 +1029,8 @@ export default class Scenes extends Vue {
       ...this.$data.sdkOptions,
       app: gid || '',
       app_id: gid || '',
-      aid: aid || '',
-      Aid: aid || '',
+      aid: aid || '0',
+      Aid: aid || '0',
       openid: userInfo.openid || '0'
     };
     this.$data.deviceType = device_type || '';
