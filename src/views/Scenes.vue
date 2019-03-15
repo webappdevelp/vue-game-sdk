@@ -112,6 +112,7 @@ import { deviceInit } from '@/api/api';
 import { apiPay, u9Pay, wxPay } from '@/api/gamesPay';
 import { getCookie, setCookie } from '@/utils/ts/cookies';
 import isWx from '@/utils/ts/device/isWx';
+import isMobile from '@/utils/ts/device/isMobile';
 import { initWXJSSDK, wxJSSDKPay } from '@/utils/ts/wx';
 import fixFormBug from '@/utils/ts/fixFormBug';
 import clipboard from '@/utils/ts/clipboard';
@@ -658,6 +659,13 @@ export default class Scenes extends Vue {
             app_ext,
             callback_url,
             ...this.$data.sdkOptions
+          });
+        }
+        if (!isMobile) {
+          this.updateLoading(false);
+          this.showToast('暂不支持PC版微信支付, 您可使用手机登录游戏进行支付');
+          return this.postMessage({
+            action: 'payFail'
           });
         }
         wxPay({
