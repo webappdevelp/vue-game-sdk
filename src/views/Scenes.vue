@@ -1030,7 +1030,7 @@ export default class Scenes extends Vue {
     const { gid, aid, device_type } = this.$route.query;
     const userInfo = this.$store.getters['user/userInfo'];
     if (isWx && (!userInfo.openid || userInfo.openid === '0')) {
-      return (window.location.href = `/user/scenes?gid=${gid}`);
+      return (window.location.href = `/user/scenes?${window.location.href.split('?')[1]}`);
     }
     defaultKeFu.wxqrcode = require(`@/assets/wxqrcode/${gid}/qrcode.jpg`);
     this.$data.sdkOptions = {
