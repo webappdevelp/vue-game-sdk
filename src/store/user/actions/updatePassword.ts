@@ -1,0 +1,70 @@
+import {
+  UPDATELOAD,
+  UPDATETOAST,
+  UPDATEUSERINFO
+} from '@/store/types';
+import { updatePassword } from '@/api/api';
+import { ApiUpdatePswOptions } from '@/api/api.d';
+
+export default async (
+  {
+    commit,
+    dispatch,
+    rootState
+  }: { commit: any; dispatch: any; rootState: any },
+  params: ApiUpdatePswOptions
+) => {
+  commit(
+    {
+      type: UPDATELOAD,
+      data: true
+    },
+    { root: true }
+  );
+  const { userInfo } = rootState.user;
+  let status = null;
+  let message = null;
+  try {
+    const result = await updatePassword({
+      ...params,
+      token: userInfo.token,
+      guid: userInfo.guid
+    });
+    status = result.status;
+    message = '密码修改成功';
+    commit(
+      {
+        type: `user/${UPDATEUSERINFO}`,
+        data: {
+          ...result.data
+        },
+        action: 'updated'
+      },
+      { root: true }
+    );
+    const res = await dispatch('user/loginGame', { ...params }, { root: true });
+    status = res;
+  } catch (err) {
+    status = !0;
+    message = err && err.message;
+  }
+  if (status !== null) {
+    commit(
+      {
+        type: UPDATELOAD,
+        data: false
+      },
+      { root: true }
+    );
+  }
+  if (message) {
+    commit(
+      {
+        type: UPDATETOAST,
+        data: message
+      },
+      { root: true }
+    );
+  }
+  return status;
+};
