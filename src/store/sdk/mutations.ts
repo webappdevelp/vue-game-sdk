@@ -1,5 +1,5 @@
-import { userStorageName, gamerStorageName, expireDays } from '@/config';
-import Cookies from 'js-cookie';
+import { userStorageName } from '@/config';
+import { getStorage, setStorage } from '@/utils/ts/storage';
 import {
   UPDATEUSERINFO,
   DELUSERINFO,
@@ -17,12 +17,11 @@ const mutations = {
       ...data
     };
     const storageItem = `${userStorageName}${state.game.id}-${state.game.start_origin}`;
-    if (state.user.userId && JSON.stringify(state.user) !== Cookies.get(storageItem)) {
+    const storageValue = getStorage(storageItem);
+    if (state.user.userId && JSON.stringify(state.user) !== JSON.stringify(storageValue)) {
       const tempUser = JSON.parse(JSON.stringify(state.user));
       delete tempUser.step;
-      Cookies.set(storageItem, JSON.stringify(tempUser), {
-        expires: expireDays
-      });
+      setStorage(storageItem, tempUser);
     }
   },
   // 更新游戏数据
@@ -60,10 +59,10 @@ const mutations = {
   [DELUSERINFO](state: any, data: any = {}) {
     const { user, game } = state;
     state.user = { step: 'logOut' };
-    Cookies.set(`${userStorageName}${game.id}-${game.start_origin}`, JSON.stringify({
+    setStorage(`${userStorageName}${game.id}-${game.start_origin}`, {
       username: user.username,
       password: user.password
-    }), { expires: expireDays });
+    });
   }
 };
 

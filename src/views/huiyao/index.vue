@@ -13,8 +13,10 @@
 			@change="changeGameIframeStyle"
 			@click="openCenter"
 		/>
+		<ad-drag :sdk-options="sdkOptions" @change="changeGameIframeStyle" />
 		<center :show.sync="showCenter" :sdk-options="sdkOptions" />
 		<pay-pannel :sdk-options="sdkOptions" />
+		<retain :sdk-options="sdkOptions" />
 		<iframe
 			v-if="game.url !== ''"
 			@load="initMessager"
@@ -44,17 +46,21 @@ import Login from '@/components/sdk/login.vue';
 import FastResult from '@/components/sdk/fastResult.vue';
 import Center from '@/components/sdk/centerPannel/index.vue';
 import Drag from '@/components/sdk/drag.vue';
+import AdDrag from '@/components/sdk/adDrag.vue';
 import PayPannel from '@/components/sdk/payPannel.vue';
 import AuthVerify from '@/components/sdk/authVerify.vue';
+import Retain from '@/components/retain.vue';
 
 @Component({
 	components: {
 		Login,
 		FastResult,
 		Drag,
+		AdDrag,
 		Center,
 		AuthVerify,
 		PayPannel,
+		Retain
 	},
 	computed: {
     ...mapState('sdk', {

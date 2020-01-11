@@ -1,56 +1,53 @@
-export function setStorage(name: string, value: any, days?: number) {
-  delStorage(name);
+// 优先采用storage存储，否则采用Cookie模式存储
+import Cookies from 'js-cookie';
+// 设置缓存数据, 传入的数据类型建议：Object
+function setStorage(name: string, value: any, days: number = 360) {
   try {
-    if (days) {
-      return window.localStorage.setItem(
-        name,
-        JSON.stringify({
-          expires: new Date().getTime() + days * 24 * 3600,
-          value
-        })
-      );
-    }
-    return window.localStorage.setItem(
+    delStorage(name);
+    window.localStorage.setItem(
       name,
       JSON.stringify({
+        expires: new Date().getTime() + days * 24 * 3600,
         value
       })
     );
   } catch (err) {
-    alert(err.message);
+    Cookies.set(name, JSON.stringify(value), { expires: days });
   }
 }
 
-export function getStorage(name: string) {
+// 获取缓存数据，数据类型：Object | null
+function getStorage(name: string) {
   try {
-    const now = new Date().getTime();
-    let datas: any = window.localStorage.getItem(name);
-    datas = JSON.parse(datas);
+    const nowTime = new Date().getTime();
+    let datas: any = JSON.parse(window.localStorage.getItem(name) || 'null');
     if (datas) {
       const { expires, value } = datas;
-      if (datas && expires) {
-        if (now < expires) {
-          return value;
-        } else {
-          delStorage(name);
-          return null;
-        }
-      } else if (value) {
+      if (nowTime < expires) {
         return value;
-      } else {
-        return datas;
       }
+      delStorage(name);
+      return null;
     }
-    return null;
+    return JSON.parse(Cookies.get(name) || 'null');
   } catch (err) {
-    console.log(err.message);
+    console.info('get storage error ', err && err.message);
   }
 }
 
-export function delStorage(name: string) {
+// 清除缓存数据
+function delStorage(name: string) {
   try {
     window.localStorage.removeItem(name);
+    Cookies.remove(name);
   } catch (err) {
-    alert(err.message);
+    console.info('remove storage error ', err && err.message);
   }
+}
+
+export {
+  Cookies,
+  getStorage,
+  setStorage,
+  delStorage
 }

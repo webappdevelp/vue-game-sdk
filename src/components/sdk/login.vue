@@ -58,13 +58,13 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
-import Cookies from 'js-cookie';
 import MD5 from 'md5';
 import MsgBox from '@/components/core/msgBox/index.vue';
 import HForm from '@/components/core/form/index.vue';
 import Btn from '@/components/core/btn/index.vue';
 import { regMobile } from '@/utils/ts/regexps';
 import { userStorageName } from '@/config';
+import { getStorage } from '@/utils/ts/storage';
 
 @Component({
   components: {
@@ -181,7 +181,7 @@ export default class Login extends Vue {
   private fillDefaultForm() {
     if (this.show) {
       const { app, start_origin } = this.sdkOptions;
-      const userInfo = JSON.parse(Cookies.get(`${userStorageName}${app}-${start_origin}`) || '{}');
+      const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
       const { username, password } = userInfo;
       this.$data.login.username.value = username || '';
       this.$data.login.password.value = password || '';

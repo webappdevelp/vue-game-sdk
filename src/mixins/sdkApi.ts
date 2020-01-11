@@ -1,5 +1,5 @@
 import { Vue, Component } from 'vue-property-decorator';
-import Cookies from 'js-cookie';
+import { Cookies, getStorage, setStorage } from '@/utils/ts/storage';
 import { UPDATEGAMEINFO } from '@/store/types';
 import isAndroid from '@/utils/ts/device/isAndroid';
 import { expireDays } from '@/config';
@@ -14,7 +14,7 @@ export default class SdkApi extends Vue {
    const { channel } = sdkOptions;
    origin = origin ? origin : channel === '154' ? 'api' : 'u9';
    const openid = Cookies.get('openid') || '';
-   const devices = JSON.parse(Cookies.get('device') || '{}');
+   const devices = getStorage('device') || {};
    let imei = devices.imei || query.imei || query.idfa || '';
    if (!imei && isAndroid && window.android) {
      imei = await window.android.getImei();
@@ -37,7 +37,7 @@ export default class SdkApi extends Vue {
          device: result.data.device
        };
        if (imei !== devices.imei) {
-          Cookies.set('device', JSON.stringify(result.data), { expires: expireDays });
+          setStorage('device', result.data);
        }
        return true;
      }

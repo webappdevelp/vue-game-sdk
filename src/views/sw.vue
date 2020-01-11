@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts">
+// 二合一切换链接
 import { Vue, Component } from 'vue-property-decorator';
 import isAndroid from '@/utils/ts/device/isAndroid';
 

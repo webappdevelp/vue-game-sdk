@@ -22,9 +22,7 @@ const state = {
     url: '',
     gifts: [],
     infos: [],
-    kefu: {
-      link: 'https://m.baidu.com'
-    },
+    kefu: {},
     channel: '',
     start_origin: '',
   },

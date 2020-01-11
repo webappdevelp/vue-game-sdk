@@ -1,7 +1,7 @@
 import { Component, Vue } from 'vue-property-decorator';
-import Cookies from 'js-cookie';
+import { Cookies, getStorage, setStorage } from '@/utils/ts/storage';
 import MD5 from 'md5';
-import { userStorageName, gamerStorageName, expireDays } from '@/config';
+import { userStorageName, gamerStorageName } from '@/config';
 import { UPDATEUSERINFO, UPDATEGAMEINFO, UPDATEAD } from '@/store/types';
 import isWx from '@/utils/ts/device/isWx';
 import fixFormBug from '@/utils/ts/fixFormBug';
@@ -61,8 +61,8 @@ export default class SdkCommon extends Vue {
     const { sdkOptions } = this.$data;
     const { app, start_origin } = sdkOptions;
     const openid = Cookies.get('openid') || '';
-    const userInfo = JSON.parse(Cookies.get(`${userStorageName}${app}-${start_origin}`) || '{}');
-    const gameInfo = JSON.parse(Cookies.get(`${gamerStorageName}-${userInfo.uid}-${app}-${start_origin}`) || '{}');
+    const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
+    const gameInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${app}-${start_origin}`) || {};
     let defaultUser: {
       token?: string;
       uid?: number;
@@ -108,10 +108,10 @@ export default class SdkCommon extends Vue {
           step: 'logined'
         });
       } else {
-        Cookies.set(`${userStorageName}${app}-${start_origin}`, JSON.stringify({
+        setStorage(`${userStorageName}${app}-${start_origin}`, {
           username: userInfo.username,
           password: userInfo.password
-        }), { expires: expireDays });
+        });
       }
     } else if (isWx && !userInfo.username) {
       // 如果是微信内，直接注册

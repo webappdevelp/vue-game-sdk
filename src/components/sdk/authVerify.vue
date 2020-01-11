@@ -1,5 +1,6 @@
 <template>
-  <msg-box 
+  <msg-box
+    key="auth-verify"
     :show="!!step"
     :title="title"
     :closeable="['loginLimit', 'payLimit'].indexOf(step) < 0"
