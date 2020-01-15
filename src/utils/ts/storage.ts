@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 // 设置缓存数据, 传入的数据类型建议：Object
 function setStorage(name: string, value: any, days: number = 360) {
   try {
-    delStorage(name);
+    // delStorage(name);
     window.localStorage.setItem(
       name,
       JSON.stringify({

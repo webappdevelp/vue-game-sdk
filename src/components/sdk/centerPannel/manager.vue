@@ -141,7 +141,7 @@ export default class Manager extends Vue {
           prefix: 'lock',
           suffix: 'show',
           switchedSuffix: 'hide',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         },
@@ -152,7 +152,7 @@ export default class Manager extends Vue {
           prefix: 'lock',
           suffix: 'show',
           switchedSuffix: 'hide',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         },
@@ -163,7 +163,7 @@ export default class Manager extends Vue {
           prefix: 'lock',
           suffix: 'show',
           switchedSuffix: 'hide',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         }
@@ -204,7 +204,7 @@ export default class Manager extends Vue {
           prefix: 'lock',
           suffix: 'show',
           switchedSuffix: 'hide',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         }

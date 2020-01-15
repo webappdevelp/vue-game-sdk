@@ -127,7 +127,7 @@ export default class Huiyao extends Mixins(sdkCommon, sdkMessager, sdkApi) {
 	}
 
 	public async created() {
-		const wxAuthed = this.wxAuth();
+		const wxAuthed = await this.wxAuth();
 		// 假如是微信内，则需等待微信授权后再往下走
 		if (wxAuthed === true) {
 			this.initSdkOptions({ startOrigin: 'grf' });
@@ -137,7 +137,7 @@ export default class Huiyao extends Mixins(sdkCommon, sdkMessager, sdkApi) {
 			if (initSuccess === true) {
 				this.getStorageUserInfo();
 			}
-			this.getGame();
+			await this.getGame();
 			this.setPageShare();
 		}
 	}

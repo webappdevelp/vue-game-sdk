@@ -14,7 +14,7 @@ export default async (state: any, params: ApiSignInOptions) => {
       guid,
       token
     });
-    const userId = await state.dispatch('loginU9', {
+    const userId = [155, '155'].indexOf(params.channel) > -1 ? uid : await state.dispatch('loginU9', {
       ...params,
       guid,
       token,

@@ -17,14 +17,17 @@ export default async (state: any, params: ApiQuickRegisterOptions) => {
       token,
       from_action: 'fastReg'
     });
-    const userId = await state.dispatch('loginU9', {
-      ...params,
-      app_id: params.app,
-      channel_id: params.channel,
-      guid,
-      token,
-      username
-    });
+    const userId =
+      [155, '155'].indexOf(params.channel) > -1
+        ? uid
+        : await state.dispatch('loginU9', {
+            ...params,
+            app_id: params.app,
+            channel_id: params.channel,
+            guid,
+            token,
+            username
+          });
     const { mobile } = userInfo;
     state.commit(UPDATEUSERINFO, {
       uid,

@@ -152,8 +152,9 @@ export interface ApiLogReportOptions extends ApiCommonOptions {
  * 参数说明：
  * total_fee: 支付总金额，单位(分)
  */
-export interface ApiPPPCheck extends ApiCommonOptions {
+export interface ApiPPPCheckOptions extends ApiCommonOptions {
   total_fee: number;
+  u9uid: string;
 }
 
 

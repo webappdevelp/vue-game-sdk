@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import { Vue, Component, Prop } from 'vue-property-decorator';
 import MD5 from 'md5';
 import MsgBox from '@/components/core/msgBox/index.vue';
 import HForm from '@/components/core/form/index.vue';
@@ -112,7 +112,7 @@ export default class Login extends Vue {
           autocomplete: true,
           suffix: 'hide',
           switchedSuffix: 'show',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         }
@@ -161,7 +161,7 @@ export default class Login extends Vue {
           autocomplete: true,
           suffix: 'hide',
           switchedSuffix: 'show',
-          clearable: false,
+          clearable: true,
           msg: '',
           value: ''
         }
@@ -177,15 +177,12 @@ export default class Login extends Vue {
     }
   }
 
-  @Watch('show', { deep: true })
   private fillDefaultForm() {
-    if (this.show) {
-      const { app, start_origin } = this.sdkOptions;
-      const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
-      const { username, password } = userInfo;
-      this.$data.login.username.value = username || '';
-      this.$data.login.password.value = password || '';
-    }
+    const { app, start_origin } = this.sdkOptions;
+    const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
+    const { username, password } = userInfo;
+    this.$data.login.username.value = username || '';
+    this.$data.login.password.value = password || '';
   }
 
   private async switchForm(type: string = '') {
@@ -232,9 +229,15 @@ export default class Login extends Vue {
     });
   }
 
-  private created() {
-    this.fillDefaultForm();
+  private updated() {
+    if (this.show) {
+      this.fillDefaultForm();
+    }
   }
+
+  /* private created() {
+    this.fillDefaultForm();
+  } */
 }
 </script>
 

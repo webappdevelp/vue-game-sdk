@@ -9,23 +9,29 @@ import fixFormBug from '@/utils/ts/fixFormBug';
 @Component
 export default class SdkCommon extends Vue {
   // 微信授权
-  public wxAuth() {
+  public async wxAuth() {
+    /* const openid = await new Promise((resolve: any, reject: any) => {
+      setTimeout(() => resolve(Cookies.get('openid')), 500)
+    }); */
+    const { query } = this.$route;
+    const { gid, channel } = query;
     const openid = Cookies.get('openid');
     if (isWx && !openid) {
       return (window.location.href = `${window.location.origin}/user/wxAuth?callback_url=${encodeURIComponent(
         window.location.href
-      )}`);
+      )}&app_id=${gid}&channel_id=${channel}`);
     }
+    openid && (Cookies.remove('openid'));
     return true;
   }
 
   // 定义sdk参数
-  public initSdkOptions(params: { startOrigin: string }) {
-    const { startOrigin } = params;
+  public initSdkOptions(params: { startOrigin: string } = { startOrigin: 'grf' }) {
     const { query } = this.$route;
+    const { startOrigin } = params;
     const { gid, channel, channel_id, aid } = query;
     const { sdkOptions } = this.$data;
-    this.$data.sdkOptions = {
+    const options: any = {
       ...sdkOptions,
       ...query,
       start_origin: startOrigin,
@@ -35,6 +41,10 @@ export default class SdkCommon extends Vue {
       channel: channel || '',
       channel_id: channel || ''
     };
+    /* if ([155, '155'].indexOf(channel as string) > -1) {
+      options.u9uid = '999';
+    } */
+    this.$data.sdkOptions = options;
     // 配置游戏相关信息
     this.$store.commit(`sdk/${UPDATEGAMEINFO}`, {
       id: gid,
@@ -51,7 +61,7 @@ export default class SdkCommon extends Vue {
   public initDragStyle() {
     const { sdkOptions } = this.$data;
     const { ctype } = sdkOptions;
-    if (/hy/ig.test(ctype)) {
+    if (/hy/gi.test(ctype)) {
       this.$data.dragStyle.backgroundImage = `url(${require('@/assets/sdk/hy_control.png')})`;
     }
   }
@@ -59,8 +69,7 @@ export default class SdkCommon extends Vue {
   // 获取缓存的用户数据
   public async getStorageUserInfo() {
     const { sdkOptions } = this.$data;
-    const { app, start_origin } = sdkOptions;
-    const openid = Cookies.get('openid') || '';
+    const { app, start_origin, channel } = sdkOptions;
     const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
     const gameInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${app}-${start_origin}`) || {};
     let defaultUser: {
@@ -79,7 +88,6 @@ export default class SdkCommon extends Vue {
       guid: '',
       userId: '',
       username: '',
-      openid: '',
       age: -1
     };
     if (userInfo && userInfo.token) {
@@ -91,10 +99,10 @@ export default class SdkCommon extends Vue {
         userId: userInfo.userId || gameInfo.userId || '',
         username: userInfo.username || '',
         password: userInfo.password || '',
-        openid: !!openid ? openid : userInfo.openid || '',
         age: typeof userInfo.age === 'undefined' ? -1 : userInfo.age
       };
-      const checkResult = await this.$store.dispatch('sdk/checkU9Token', {
+      const dispatchUrl = [155, '155'].indexOf(channel) > -1 ? 'sdk/pppCheck' : 'sdk/checkU9Token';
+      const checkResult = await this.$store.dispatch(dispatchUrl, {
         ...sdkOptions,
         uid: userInfo.uid,
         guid: userInfo.guid,

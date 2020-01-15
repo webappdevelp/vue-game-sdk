@@ -1,4 +1,4 @@
-import { ApiPayIndexOptions, ApiGetOrderOptions, U9CreateOrderOptions, ApiCheckPayOPtions } from '@/api/api.d';
+import { ApiPayIndexOptions, ApiGetOrderOptions, U9CreateOrderOptions, ApiCheckPayOPtions, ApiPPPCheckOptions } from '@/api/api.d';
 import { post } from '@/utils/ts/fetch';
 import switchApi from './switchApi';
 
@@ -66,6 +66,15 @@ export function getOrder(params: ApiGetOrderOptions) {
   const { api } = switchApi(params.start_origin);
 
   return sendPost(`${api}/pay/getOrder`, {
+    ...params
+  });
+}
+
+// ios api 下单
+export function pppCheck(params: ApiPPPCheckOptions) {
+  const { api } = switchApi(params.start_origin);
+
+  return sendPost(`${api}/ppp/check`, {
     ...params
   });
 }

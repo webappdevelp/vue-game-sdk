@@ -9,6 +9,7 @@ export default class Common extends Vue {
   public getStorageUserInfo(params: { gid: string; startOrigin: string }) {
     const { gid, startOrigin } = params;
     const openid = Cookies.get('openid') || '';
+    Cookies.remove('openid');
     const userInfo = JSON.parse(
       Cookies.get(`${userStorageName}${gid}-${startOrigin}`) || 'null'
     );

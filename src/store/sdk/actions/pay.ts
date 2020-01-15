@@ -1,4 +1,4 @@
-import { checkPay, wxPay } from '@/api/gamesPay';
+import { checkPay } from '@/api/gamesPay';
 import { ApiCheckPayOPtions, U9CreateOrderOptions, ApiPayIndexOptions } from '@/api/api.d';
 import { UPDATELOAD, UPDATEMSG, UPDATECERTIFY, UPDATEPAY } from '@/store/types';
 import isMiniProgam from '@/utils/ts/device/isMiniProgram';
@@ -6,10 +6,7 @@ import isMobile from '@/utils/ts/device/isMobile';
 import isWx from '@/utils/ts/device/isWx';
 
 // 支付检查并创建订单
-export default async (
-  state: any,
-  params: ApiCheckPayOPtions & U9CreateOrderOptions & ApiPayIndexOptions
-) => {
+export default async (state: any, params: ApiCheckPayOPtions & U9CreateOrderOptions & ApiPayIndexOptions) => {
   try {
     state.commit(`global/${UPDATELOAD}`, { show: true, content: '请稍后...' }, { root: true });
     const { guid, userId } = state.rootState.sdk.user;
@@ -39,7 +36,8 @@ export default async (
       return 'fail';
     }
     // 创建订单
-    const OrderId = await state.dispatch('createU9Order', {
+    const getOrderUrl = [155, '155'].indexOf(params.channel) > -1 ? 'pppCheck' : 'createU9Order';
+    const OrderId = await state.dispatch(getOrderUrl, {
       ...params,
       userId,
       deviceId: params.device
@@ -48,7 +46,6 @@ export default async (
     // 如果是在PC版微信内则提示使用手机打开游戏并支付
     if (isWx && !isMobile) {
       throw '暂不支持PC版微信支付, 您可使用手机登录游戏进行支付哦~';
-
     } else if (isMiniProgam) {
       // 如果是小程序则跳转到小程序支付
       return window.wx.miniProgram.navigateTo({

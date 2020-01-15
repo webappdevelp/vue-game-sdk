@@ -10,7 +10,7 @@ export default async (state: any, params: ApiGetOrderOptions) => {
     guid,
     token,
     openid,
-    u9uid: userId,
+    u9uid: [155, '155'].indexOf(params.channel) > -1 ? '999' : userId,
     http_source: 'JSAPI',
     pay_channel: 'WXPAY'
   });

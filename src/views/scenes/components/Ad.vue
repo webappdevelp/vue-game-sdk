@@ -1,5 +1,5 @@
 <template>
-  <div class="ad" v-if="!!datas.ad_scenes">
+  <div class="ad" v-if="!!datas.adsc">
     <ad-drag
       :show="true"
       :bg-img="''"
@@ -9,7 +9,7 @@
       <div class="ad-drag">
         <img
           class="ad-logo animated infinite headShake"
-          :src="require(`@/assets/ad/${datas.ad_scenes}/logo.png`)"
+          :src="require(`@/assets/ad/${datas.adsc}/logo.png`)"
           alt="抖音"
         />
         <p>戳我领红包</p>
@@ -57,7 +57,7 @@ export default class Ad extends Vue {
     type: Object,
     default: () => ({})
   })
-  private datas!: { ad_scenes: string; wl: string };
+  private datas!: { adsc: string; wl: string };
 
   private data() {
     return {

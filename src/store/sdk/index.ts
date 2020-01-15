@@ -1,3 +1,4 @@
+import { Cookies } from '@/utils/ts/storage';
 import mutations from './mutations';
 import actions from './actions';
 
@@ -11,7 +12,7 @@ const state = {
     username: '',
     password: '',
     mobile: '',
-    openid: '',
+    openid: Cookies.get('openid') || '',
     age: -1,
     step: ''
   },

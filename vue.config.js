@@ -5,8 +5,8 @@ function resolve(dir) {
 }
 
 module.exports = {
-  // publicPath: process.env.NODE_ENV === 'production' ? '//cdn.aliyun.gaoruifa.cn/games/' : '/',
-  publicPath: process.env.NODE_ENV === 'production' ? '/games/' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? '//cdn.aliyun.gaoruifa.cn/games/' : '/',
+  // publicPath: process.env.NODE_ENV === 'production' ? '/games/' : '/',
   /* devServer: {
     https: false,
     host: 'sdk.zhihuigu168.com',

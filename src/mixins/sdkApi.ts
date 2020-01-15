@@ -12,7 +12,7 @@ export default class SdkApi extends Vue {
    const { query } = this.$route;
    const { sdkOptions } = this.$data;
    const { channel } = sdkOptions;
-   origin = origin ? origin : channel === '154' ? 'api' : 'u9';
+   origin = origin ? origin : [190, '190'].indexOf(channel) > -1 ? 'u9' : 'api';
    const openid = Cookies.get('openid') || '';
    const devices = getStorage('device') || {};
    let imei = devices.imei || query.imei || query.idfa || '';
@@ -56,6 +56,7 @@ export default class SdkApi extends Vue {
       gid: sdkOptions.app
     });
     if (result) {
+      result.title && (document.title = result.title);
       const url = result.cp_url.indexOf('?') > -1 ? `${result.cp_url}&origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : '' }` : `${result.cp_url}?origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : '' }`
       const params = result.json_param || {};
       this.$store.commit(`sdk/${UPDATEGAMEINFO}`, {

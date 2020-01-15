@@ -21,7 +21,7 @@ export default class SdkMessager extends Vue {
 			link: `${window.location.origin}/games/scenes?${
 				window.location.href.split('?')[1]
 			}`,
-			imgUrl: `${window.location.protocol}${game.kefu.wxqrcode}`,
+			imgUrl: game.kefu.wxqrcode ? `${window.location.protocol}${game.kefu.wxqrcode}` : '',
 			callback: () => {
 				this.sendMessage({
 					action: 'shareComplete'
@@ -94,6 +94,15 @@ export default class SdkMessager extends Vue {
             callbackUrl: datas.callbackUrl || datas.callBackUrl,
             ext: ''
           });
+          if (payResult === 'success') {
+            this.sendMessage({
+              action: 'paySuccess'
+            })
+          } else if (payResult === 'fail') {
+            this.sendMessage({
+              action: 'payFail'
+            })
+          }
           break;
         case 'bindMobile':
           this.$store.dispatch('sdk/bindMobile', datas).then((res: any) => {
