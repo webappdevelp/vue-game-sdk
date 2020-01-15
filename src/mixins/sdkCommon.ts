@@ -101,7 +101,7 @@ export default class SdkCommon extends Vue {
         password: userInfo.password || '',
         age: typeof userInfo.age === 'undefined' ? -1 : userInfo.age
       };
-      const dispatchUrl = [155, '155'].indexOf(channel) > -1 ? 'sdk/pppCheck' : 'sdk/checkU9Token';
+      const dispatchUrl = [155, '155'].indexOf(channel) > -1 ? 'sdk/checkApiToken' : 'sdk/checkU9Token';
       const checkResult = await this.$store.dispatch(dispatchUrl, {
         ...sdkOptions,
         uid: userInfo.uid,

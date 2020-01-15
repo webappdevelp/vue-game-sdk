@@ -11,6 +11,7 @@ import checkU9Token from './actions/checkU9Token';
 import getServiceInfo from './actions/serviceInfo';
 import bindMobile from './actions/bindMobile';
 import pay from './actions/pay';
+import pppCheck from './actions/pppCheck';
 import createU9Order from './actions/createU9Order';
 import wxPay from './actions/wxPay';
 import getOrder from './actions/getOrder';
@@ -42,6 +43,7 @@ const actions = {
 
   // 支付检查并创建订单
   pay,
+  pppCheck,
   createU9Order,
   wxPay,
   getOrder,

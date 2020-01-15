@@ -58,7 +58,8 @@ export default class Retain extends Vue {
   }
 
   private created() {
-    const { wl } = this.sdkOptions;
+    const { query } = this.$route;
+    const { wl } = query;
     if (!!wl) {
       window.history.pushState(null, '', '#');
       window.addEventListener('popstate', () => {

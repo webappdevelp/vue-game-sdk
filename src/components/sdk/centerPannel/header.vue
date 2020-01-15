@@ -45,7 +45,6 @@ export default class CHeader extends Vue {
 	private data() {
 		return {
 			isWx,
-			isApp: false,
 			style: {
 				backgroundImage: `url(${require('@/assets/sdk/center/avatar.png')})`
 			}
@@ -55,11 +54,6 @@ export default class CHeader extends Vue {
 	// methods
 	private handleClick(type: string) {
 		this.$emit('handle', type);
-	}
-
-	private created() {
-		const { query } = this.$route;
-		this.$data.isApp = !!query.mapp || isWx;
 	}
 }
 </script>
