@@ -1,6 +1,6 @@
 <template>
   <msg-box
-    title="注册成功"
+    title="温馨提示"
     :show="show"
     :closeable="false">
     <div slot="body">

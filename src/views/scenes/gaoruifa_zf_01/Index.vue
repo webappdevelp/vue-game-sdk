@@ -4,7 +4,6 @@
       <img :src="gameDatas.kefu && gameDatas.kefu.wxqrcode" alt="微信二维码" />
     </div>
     <hy-drag
-      v-if="!showControlDrag"
       :drag-style="controlDragStyle"
       @click="showCenterPannel"
       @drag-start="controlDragStart"

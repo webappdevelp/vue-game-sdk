@@ -82,7 +82,7 @@ export default class Center extends Vue {
 				const game = this.$store.getters['sdk/game'];
 				const link = game.kefu.link;
 				if (link) {
-					openBrowser(!!this.sdkOptions.mapp, link);
+					openBrowser(!!this.sdkOptions.mapp, this.sdkOptions.ctype, link);
 				}
 				break;
 		}

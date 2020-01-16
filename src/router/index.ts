@@ -11,16 +11,10 @@ const routes = [
     component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue')
   },
   {
-    name: 'huiyao',
-    path: '/huiyao',
-    meta: { title: '正在加载游戏' },
-    component: () => import(/* webpackChunkName: "huiyao" */ '@/views/huiyao/index.vue')
-  },
-  {
     name: 'scenes',
     path: '/scenes',
     meta: { title: '正在加载游戏' },
-    component: () => import(/* webpackChunkName: "scenes" */ '@/views/scenes/Index.vue')
+    component: () => import(/* webpackChunkName: "scenes" */ '@/views/sdk/index.vue')
   },
   {
     name: 'skfb',

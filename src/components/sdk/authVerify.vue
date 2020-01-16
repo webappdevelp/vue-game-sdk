@@ -22,7 +22,8 @@
     </template>
     <div slot="footer">
       <div v-if="['auth', 'payAuth'].indexOf(step) > -1" class="auth-tips">
-        根据<span @click="openBrowser(!!sdkOptions.mapp, 'http://www.sapprft.gov.cn/sapprft/contents/6588/407807.shtml')">《关于防止未成年人沉迷网络游戏的通知》</span>, 游戏用户应使用有效身份证件实名认证, 我们承若将依法保护您的个人信息安全!
+        根据<span @click="openBrowser(!!sdkOptions.mapp, sdkOptions.ctype, 'http://www.sapprft.gov.cn/sapprft/contents/6588/407807.shtml')">《关于防止未成年人沉迷网络游戏的通知》</span>
+        , 游戏用户应使用有效身份证件实名认证, 我们承若将依法保护您的个人信息安全!
       </div>
       <div v-if="['loginLimit', 'payLimit'].indexOf(step) > -1" class="btn" @click="hideModel">好的, 知道了</div>
     </div>
