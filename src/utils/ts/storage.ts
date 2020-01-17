@@ -7,7 +7,7 @@ function setStorage(name: string, value: any, days: number = 360) {
     window.localStorage.setItem(
       name,
       JSON.stringify({
-        expires: new Date().getTime() + days * 24 * 3600,
+        expires: new Date().getTime() + days * 24 * 3600 * 1000,
         value
       })
     );
@@ -23,11 +23,11 @@ function getStorage(name: string) {
     let datas: any = JSON.parse(window.localStorage.getItem(name) || 'null');
     if (datas) {
       const { expires, value } = datas;
-      if (nowTime < expires) {
-        return value;
-      }
+      // if (nowTime < expires) {
+      return value;
+      /* }
       delStorage(name);
-      return null;
+      return null; */
     }
     return JSON.parse(Cookies.get(name) || 'null');
   } catch (err) {

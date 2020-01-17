@@ -1,4 +1,4 @@
-import { checkPay } from '@/api/gamesPay';
+import { checkPay, pppCheck } from '@/api/gamesPay';
 import { ApiCheckPayOPtions, U9CreateOrderOptions, ApiPayIndexOptions } from '@/api/api.d';
 import { UPDATELOAD, UPDATEMSG, UPDATECERTIFY, UPDATEPAY } from '@/store/types';
 import isMiniProgam from '@/utils/ts/device/isMiniProgram';
@@ -10,13 +10,15 @@ export default async (state: any, params: ApiCheckPayOPtions & U9CreateOrderOpti
   try {
     state.commit(`global/${UPDATELOAD}`, { show: true, content: '请稍后...' }, { root: true });
     const { guid, userId } = state.rootState.sdk.user;
-    const checkPayResult = await checkPay({
+    const isIOSChannel = [155, '155'].indexOf(params.channel) > -1;
+    const payApi = isIOSChannel ? pppCheck : checkPay;
+    const checkPayResult = await payApi({
       ...params,
       guid,
       total_fee: params.amount || 0,
       api_version: 1
     });
-    const { pay_limit, available_balance } = checkPayResult.data;
+    const { pay_limit, available_balance, url } = checkPayResult.data;
     // 支付受限
     if (pay_limit === 1) {
       state.commit(`global/${UPDATELOAD}`, { show: false, content: '' }, { root: true });
@@ -36,8 +38,8 @@ export default async (state: any, params: ApiCheckPayOPtions & U9CreateOrderOpti
       return 'fail';
     }
     // 创建订单
-    const getOrderUrl = [155, '155'].indexOf(params.channel) > -1 ? 'pppCheck' : 'createU9Order';
-    const OrderId = await state.dispatch(getOrderUrl, {
+    // const getOrderUrl = isIOSChannel ? 'pppCheck' : 'createU9Order';
+    const OrderId = isIOSChannel ? url.split('=')[1] : await state.dispatch('createU9Order', {
       ...params,
       userId,
       deviceId: params.device

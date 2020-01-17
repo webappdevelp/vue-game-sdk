@@ -56,7 +56,9 @@ export default class HDrag extends Vue {
       bottom: '30%',
       right: 0,
 			width: '75px',
-			height: '75px',
+      height: '75px',
+      borderRadius: '10%',
+      overflow: 'hidden'
 		})
   })
   private wrapperStyle!: { [propName: string]: any };
