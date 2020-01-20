@@ -2,7 +2,6 @@ import { Vue, Component } from 'vue-property-decorator';
 import { Cookies, getStorage, setStorage } from '@/utils/ts/storage';
 import { UPDATEGAMEINFO } from '@/store/types';
 import isAndroid from '@/utils/ts/device/isAndroid';
-import { expireDays } from '@/config';
 import kefu from '@/kefu';
 
 @Component
@@ -31,13 +30,13 @@ export default class SdkApi extends Vue {
    };
    try {
      const result = await this.$store.dispatch('sdk/deviceInit', params);
-     if (result.status === 0) {
+     if (result) {
        this.$data.sdkOptions = {
          ...sdkOptions,
-         device: result.data.device
+         device: result.device
        };
        if (imei !== devices.imei) {
-          setStorage('device', result.data);
+          setStorage('device', result);
        }
        return true;
      }

@@ -86,12 +86,13 @@ import Retain from '@/components/retain.vue';
 						});
 						break;
 					case 'logOut':
+						this.$data.showLogin = true;
 						this.sendMessage({
 							action: 'logOut'
 						});
 						break;
 				}
-        return !step || step === 'logOut' || this.$data.showLogin; 
+        return !step || this.$data.showLogin; 
 			},
     }),
 		...mapGetters('sdk', ['logined'])
