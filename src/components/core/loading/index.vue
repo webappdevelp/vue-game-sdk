@@ -31,7 +31,12 @@ export default class Loading extends Vue {
   private mask!: boolean;
 
   private initSpinner() {
-    let sprite: any = new Spinner({ top: '32px', left: '50px', width: 3, color: '#fff' }).spin(this.$refs.sprite as HTMLElement);
+    const spriteBox = this.$refs.sprite as HTMLElement;
+    if (!spriteBox) return;
+    spriteBox.innerHTML = '';
+    let sprite: any = new Spinner({ top: '32px', left: '50px', width: 3, color: '#fff' }).spin(
+      spriteBox
+    );
     this.$once('hook:beforeDestroy', () => {
       sprite = null;
     });

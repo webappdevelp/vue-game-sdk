@@ -10,9 +10,6 @@ import fixFormBug from '@/utils/ts/fixFormBug';
 export default class SdkCommon extends Vue {
   // 微信授权
   public async wxAuth() {
-    /* const openid = await new Promise((resolve: any, reject: any) => {
-      setTimeout(() => resolve(Cookies.get('openid')), 500)
-    }); */
     const { query } = this.$route;
     const { gid, channel } = query;
     const openid = Cookies.get('openid');
@@ -21,7 +18,6 @@ export default class SdkCommon extends Vue {
         window.location.href
       )}&app_id=${gid}&channel_id=${channel}`);
     }
-    openid && (Cookies.remove('openid'));
     return true;
   }
 
