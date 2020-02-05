@@ -69,9 +69,7 @@ import Retain from '@/components/retain.vue';
       },
       showLoginPannel(state: any) {
 				const { step, userId } = state.user;
-				if (!!userId) {
-					this.$data.showLogin = false;
-				}
+				this.$data.showLogin = !!userId ? false : true;
 				switch(step) {
 					case 'logined':
 						userId && this.sendMessage({
@@ -92,7 +90,7 @@ import Retain from '@/components/retain.vue';
 						});
 						break;
 				}
-        return !step || this.$data.showLogin; 
+        return this.$data.showLogin; 
 			},
     }),
 		...mapGetters('sdk', ['logined'])
@@ -131,7 +129,7 @@ export default class Huiyao extends Mixins(sdkCommon, sdkMessager, sdkApi) {
 		const wxAuthed = await this.wxAuth();
 		// 假如是微信内，则需等待微信授权后再往下走
 		if (wxAuthed === true) {
-			this.initSdkOptions({ startOrigin: 'grf' });
+			this.initSdkOptions({ startOrigin: 'sz' });
 			this.initDragStyle();
 			// 防止微信内未获取到设备号就先注册了，所以需要先获取设备号成功后再往下走
 			const initSuccess = await this.deviceInit();

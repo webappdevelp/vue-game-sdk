@@ -14,7 +14,8 @@ export default (origin: string = 'gf') => {
       return {
         api: shenzhen.api,
         u9Api: shenzhen.u9Api,
-        cqApi: shenzhen.cqApi
+        cqApi: shenzhen.cqApi,
+        bu: shenzhen.bu
       };
     case 'ch1':
       return {

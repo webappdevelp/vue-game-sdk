@@ -1,14 +1,17 @@
 import { post } from '@/utils/ts/fetch';
 import { UPDATELOAD, UPDATEMSG } from '@/store/types';
+import switchApi from '@/api/switchApi';
 
 export default async (state: any, params: {
   gid: string | number;
   channel: string | number;
-  aid: string | number
+  aid: string | number;
+  start_origin: string;
 }) => {
   try {
     state.commit(`global/${UPDATELOAD}`, { show: true, content: '正在加载...' }, { root: true });
-    const result = await post(`${'//aliyun.gaoruifa.cn' || window.location.origin}/game/detail`, {
+    const { cqApi } = switchApi(params.start_origin);
+    const result = await post(`${cqApi}/game/detail`, {
       datas: {
         ...params
       },

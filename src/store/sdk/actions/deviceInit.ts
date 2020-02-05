@@ -1,4 +1,4 @@
-import { UPDATELOAD, UPDATEMSG } from '@/store/types';
+import { UPDATELOAD } from '@/store/types';
 import { deviceInit as api_deviceInit } from '@/api/api';
 import { deviceInit as u9_deviceInit } from '@/api/u9api';
 import { DeviceInitOptions } from '@/api/api.d';

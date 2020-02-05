@@ -18,7 +18,7 @@ export default class SdkMessager extends Vue {
 			start_origin: sdkOptions.start_origin,
 			title: game.name || '',
 			desc: game.name || '',
-			link: `${window.location.origin}/games/scenes?${
+			link: `${window.location.origin}/games/play?${
 				window.location.href.split('?')[1]
 			}`,
 			imgUrl: game.kefu.wxqrcode ? `${window.location.protocol}${game.kefu.wxqrcode}` : '',

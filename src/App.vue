@@ -1,30 +1,20 @@
 <template>
 	<div id="app">
 		<router-view />
-		<loading :show="loading" />
-		<toast :show.sync="toast.show" :msg="toast.msg" :time="toast.time" />
-		<new-loading />
+		<loading />
 		<msg />
 	</div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Mixins, Watch } from 'vue-property-decorator';
-import Loading from '@/components/Loading.vue';
-import Toast from '@/components/Toast.vue';
-import NewLoading from '@/components/core/loading/index.vue';
+import { Component, Vue, Watch } from 'vue-property-decorator';
+import Loading from '@/components/core/loading/index.vue';
 import Msg from '@/components/core/msg/index.vue';
-import { mapState } from 'vuex';
 
 @Component({
 	components: {
 		Loading,
-		Toast,
-		NewLoading,
 		Msg
-	},
-	computed: {
-		...mapState(['toast', 'loading'])
 	}
 })
 export default class App extends Vue {

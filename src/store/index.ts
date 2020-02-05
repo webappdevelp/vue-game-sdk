@@ -6,7 +6,6 @@ import {
 } from './types';
 import global from './global';
 import sdk from './sdk';
-import user from './user';
 
 Vue.use(Vuex);
 
@@ -40,7 +39,6 @@ export default new Vuex.Store({
   },
   modules: {
     global,
-    sdk,
-    user
+    sdk
   },
 });

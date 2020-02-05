@@ -9,9 +9,10 @@ export const gamerStorageName = 'gu';
 
 // 深圳api接口
 export const shenzhen = {
-  api: '//api.hygame.cc',
-  u9Api: '//u9php.hygame.cc',
-  cqApi: '//bu.hygame.cc'
+  api: '//test.api.huiyaohuyu.com',
+  u9Api: '//u9php.huiyaohuyu.com',
+  cqApi: '//test.bu.hyhygame.com',
+  bu: '//test.bu.hyhygame.com'
 };
 
 // 广分api接口

@@ -11,28 +11,10 @@ const routes = [
     component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue')
   },
   {
-    name: 'scenes',
-    path: '/scenes',
+    name: 'play',
+    path: '/play',
     meta: { title: '正在加载游戏' },
-    component: () => import(/* webpackChunkName: "scenes" */ '@/views/sdk/index.vue')
-  },
-  {
-    name: 'skfb',
-    path: '/scenes/skfb',
-    meta: { title: '正在加载游戏' },
-    component: () => import(/* webpackChunkName: "skfb" */ '@/views/scenes/gaoruifa_zf_01/Index.vue')
-  },
-  {
-    name: 'skfb02',
-    path: '/scenes/skfb02',
-    meta: { title: '正在加载游戏' },
-    component: () => import(/* webpackChunkName: "skfb02" */ '@/views/scenes/gaoruifa_zf_02/Index.vue')
-  },
-  {
-    name: 'xyy',
-    path: '/actions/xyy-gift',
-    meta: { title: '领取礼包码' },
-    component: () => import(/* webpackChunkName: "xyy-gift" */ '@/views/concern/XiaoyaoyouGift.vue')
+    component: () => import(/* webpackChunkName: "play_game" */ '@/views/sdk/index.vue')
   },
   {
     name: 'poly',
@@ -51,20 +33,6 @@ const routes = [
     path: '/ad',
     meta: { title: '用户专属福利' },
     component: () => import(/* webpackChunkName: "ad" */ '@/views/ad/index.vue')
-  },
-  {
-    name: 'punch',
-    path: '/punch',
-    meta: { title: '每日签到' },
-    component: () => import(/* webpackChunkName: "layout" */ '@/views/Layout.vue'),
-    children: [
-      {
-        name: 'punch-mrlm',
-        path: 'mrlm',
-        meta: { title: '微信签到' },
-        component: () => import(/* webpackChunkName: "punch-mrlm" */ '@/views/punch/mrlm/Index.vue')
-      }
-    ]
   },
   {
     name: 'test',

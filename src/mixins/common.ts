@@ -1,5 +1,5 @@
 import { Component, Mixins } from 'vue-property-decorator';
-import { UPDATELOAD, UPDATETOAST } from '@/store/types';
+import { UPDATELOAD, UPDATEMSG } from '@/store/types';
 import storageUserGamerInfoMix from './getStorageUserGamerInfo';
 import getVerifyCodeMix from './getVerifyCode';
 import isIOS from '@/utils/ts/device/isIOS';
@@ -9,19 +9,12 @@ import isAndroid from '@/utils/ts/device/isAndroid';
 export default class Common extends Mixins(storageUserGamerInfoMix, getVerifyCodeMix) {
   // 加载提示
   public updateLoading(show: boolean) {
-    this.$store.commit({
-      type: UPDATELOAD,
-      data: show
-    });
+    this.$store.commit(`global/${UPDATELOAD}`, { show });
   }
 
   // toast 提示
   public updateToast(msg: string, time: number = 2000) {
-    this.$store.commit({
-      type: UPDATETOAST,
-      data: msg,
-      time
-    });
+    this.$store.commit(`global/${UPDATEMSG}`, { show: true, content: msg });
   }
 
   // 定义sdk参数
