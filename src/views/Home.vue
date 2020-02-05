@@ -3,22 +3,10 @@
 </template>
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import ClipBoard from '@/components/ClipBoard.vue';
-import clipboard from '@/utils/ts/clipboard';
-@Component({
-  components: {
-    copyOne: ClipBoard,
-    copyTwo: ClipBoard
-  }
-})
+@Component
 export default class Home extends Vue {
   private data() {
     return {};
-  }
-
-  // lifecycles
-  private beforeCreate() {
-    clipboard();
   }
 }
 </script>
