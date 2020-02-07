@@ -13,7 +13,7 @@ export default class SdkApi extends Vue {
    const { channel } = sdkOptions;
    origin = origin ? origin : [190, '190'].indexOf(channel) > -1 ? 'u9' : 'api';
    const openid = Cookies.get('openid') || '';
-   openid && (Cookies.remove('openid'));
+   const brand = !!openid ? '公众号' : query.mapp ? 'App' : 'web';
    const devices = getStorage('device') || {};
    let imei = devices.imei || query.imei || query.idfa || openid || '';
    if (!imei && isAndroid && window.android) {
@@ -21,8 +21,8 @@ export default class SdkApi extends Vue {
    }
    const params: any = {
       ...sdkOptions,
-      brand: !!openid ? '公众号' : 'web',
-      brand_desc: !!openid ? '公众号' : 'web',
+      brand,
+      brand_desc: brand,
       imei,
       coordinate_lng: 0,
       coordinate_lat: 0,
