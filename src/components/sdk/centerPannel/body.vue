@@ -40,7 +40,7 @@
         </div>
       </div>
       <div v-show="currentPannel === 2" class="kefu-pannel">
-        <img class="kefu-banner" :src="require('@/assets/icons/service.png')" alt="联系客服" />
+        <img class="kefu-banner" :src="require('@/assets/sdk/center/service.png')" alt="联系客服" />
         <p class="kefu-tel" v-html="kefu.numbers"></p>
         <div class="kefu-qrcode" v-html="kefu.qrcode"></div>
       </div>

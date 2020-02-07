@@ -107,7 +107,7 @@ export default class Huiyao extends Mixins(sdkCommon, sdkMessager, sdkApi) {
 				right: '-10px',
 				width: '45px',
 				height: '45px',
-				backgroundImage: `url(${require('@/assets/sdk/gf_control.png')}`
+				backgroundImage: `url(${require('@/assets/sdk/hy_control.png')}`
 			},
 			gameIframeStyle: {
         borderWidth: 0,

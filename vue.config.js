@@ -16,7 +16,7 @@ module.exports = {
   chainWebpack: config => {
     config.plugin('html').tap(args => {
       // 指定游戏的ico文件
-      args[0].favicon = 'public/gaoruifa.ico';
+      args[0].favicon = 'public/shenzhen.ico';
       return args;
     });
     

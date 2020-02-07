@@ -38,7 +38,7 @@ export default class HDrag extends Vue {
       right: '-10px',
 			width: '45px',
 			height: '45px',
-			backgroundImage: `url(${require('@/assets/sdk/gf_control.png')}`,
+			backgroundImage: `url(${require('@/assets/sdk/hy_control.png')}`,
 		})
   })
   private wrapperStyle!: { [propName: string]: any };
