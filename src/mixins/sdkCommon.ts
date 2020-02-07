@@ -66,6 +66,8 @@ export default class SdkCommon extends Vue {
   public async getStorageUserInfo() {
     const { sdkOptions } = this.$data;
     const { app, start_origin, channel } = sdkOptions;
+    const openid = Cookies.get('openid') || '';
+    openid && (Cookies.remove('openid'));
     const userInfo = getStorage(`${userStorageName}${app}-${start_origin}`) || {};
     const gameInfo = getStorage(`${gamerStorageName}-${userInfo.uid}-${app}-${start_origin}`) || {};
     let defaultUser: {
@@ -82,6 +84,7 @@ export default class SdkCommon extends Vue {
       uid: 0,
       token: '',
       guid: '',
+      openid: '',
       userId: '',
       username: '',
       age: -1
@@ -95,7 +98,8 @@ export default class SdkCommon extends Vue {
         userId: userInfo.userId || gameInfo.userId || '',
         username: userInfo.username || '',
         password: userInfo.password || '',
-        age: typeof userInfo.age === 'undefined' ? -1 : userInfo.age
+        age: typeof userInfo.age === 'undefined' ? -1 : userInfo.age,
+        openid
       };
       const dispatchUrl = [155, '155'].indexOf(channel) > -1 ? 'sdk/checkApiToken' : 'sdk/checkU9Token';
       const checkResult = await this.$store.dispatch(dispatchUrl, {
