@@ -22,8 +22,9 @@
       <iframe
         referrerpolicy="unsafe-url"
         :style="{ display: 'none', pointerEvents: 'auto', cursor: 'auto'}"
-        v-if="!!payLink" :src="payLink">
-      </iframe>
+        v-if="!!payLink"
+        :src="payLink"
+      ></iframe>
     </div>
     <div slot="footer"></div>
   </msg-box>
@@ -65,7 +66,7 @@ export default class HyModal extends Vue {
   private data() {
     return {
       payLink: ''
-    }
+    };
   }
 
   // 取消支付（关闭支付面板）
@@ -83,28 +84,28 @@ export default class HyModal extends Vue {
     });
     if (result) {
       const { pay_info_str, order_id } = result;
-      const { mapp } = this.sdkOptions;
+      clearInterval(timerInterval);
+      timerInterval = null;
+      // 开始启动订单状态检查机制，以便自动关闭支付面板弹窗
+      timerInterval = setInterval(async () => {
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          return;
+        }
+        timer--;
+        const checkResult = await this.$store.dispatch('sdk/getOrderState', {
+          order_id
+        });
+        if (checkResult) {
+          this.cancel();
+        }
+      }, 8000);
       // 若是壳包，则采用iframe打开，通过壳包代理抓包打开原生支付app或浏览器
+      const { mapp } = this.sdkOptions;
       if (mapp) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        // 开始启动订单状态检查机制，以便自动关闭支付面板弹窗
-        timerInterval = setInterval(async () => {
-          if (timer <= 0) {
-            clearInterval(timerInterval);
-            return;
-          }
-          timer--;
-          const checkResult = await this.$store.dispatch('sdk/getOrderState', {
-            order_id
-          });
-          if (checkResult) {
-            this.cancel();
-          }
-        }, 8000);
         return (this.$data.payLink = pay_info_str);
       }
-      return window.location.href = pay_info_str;
+      return (window.location.href = pay_info_str);
     }
   }
 }
