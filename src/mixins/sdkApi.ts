@@ -13,7 +13,7 @@ export default class SdkApi extends Vue {
    const { channel } = sdkOptions;
    origin = origin ? origin : [190, '190'].indexOf(channel) > -1 ? 'u9' : 'api';
    const openid = Cookies.get('openid') || '';
-   const brand = !!openid ? '公众号' : query.mapp ? 'App' : 'web';
+   const brand = !!openid ? '公众号' : !!query.mapp ? 'App' : 'web';
    const devices = getStorage('device') || {};
    let imei = devices.imei || query.imei || query.idfa || openid || '';
    if (!imei && isAndroid && window.android) {
