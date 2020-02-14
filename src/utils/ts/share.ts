@@ -40,7 +40,8 @@ function getWxConfig({
   channel_id: string;
   app_id: string;
 }) {
-  return post(`//${window.location.hostname}/lqhy/wxConfig`, {
+  const { cqApi } = switchApi(start_origin);
+  return post(`${cqApi}/lqhy/wxConfig`, {
     datas: {
       url: encodeURIComponent(window.location.href.split('#')[0]),
       channel_id,
