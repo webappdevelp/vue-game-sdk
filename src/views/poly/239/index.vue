@@ -33,14 +33,7 @@ export default class Poly extends Mixins(pageCommonMix) {
 		type: Object,
 		default: () => {}
 	})
-	private datas!: {
-		hy_gid: string;
-		hy_channel_id: string;
-		aid: string;
-		start_origin: string;
-		ptid: string;
-		gid: string;
-	};
+	private datas!: any;
 
 	private data() {
 		return {
@@ -77,10 +70,15 @@ export default class Poly extends Mixins(pageCommonMix) {
 	// 获取页面初始化信息
 	private async getInitData() {
 		const { sdkOptions, gameDatas } = this.$data;
-		let { device_type } = this.$data;
-		device_type = device_type || '';
 		try {
 			const result = await this.getPageDatas();
+			let params = '';
+			for (const p in this.datas) {
+				if (this.datas.hasOwnProperty(p)) {
+					params += `${p}=${this.datas[p]}&`
+				}
+			}
+			params = params.substring(0, params.length - 1);
 			if (result) {
 				const { cp_url, json_param } = result;
 				document.title = (json_param && json_param.title) || '';
@@ -89,8 +87,8 @@ export default class Poly extends Mixins(pageCommonMix) {
 					...json_param,
 					link:
 						cp_url.indexOf('?') >= 0
-							? `${cp_url}&device_type=${device_type}`
-							: `${cp_url}?device_type=${device_type}`
+							? `${cp_url}&${params}`
+							: `${cp_url}?${params}`
 				};
 			}
 		} catch (err) {
