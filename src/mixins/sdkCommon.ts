@@ -121,7 +121,7 @@ export default class SdkCommon extends Vue {
           password: userInfo.password
         });
       }
-    } else if (isWx && !userInfo.username) {
+    } else if (!userInfo.username) {
       // 如果是微信内，直接注册
       this.$store.dispatch(`sdk/fastReg`, {
         ...sdkOptions,
