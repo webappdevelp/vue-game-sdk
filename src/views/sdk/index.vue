@@ -33,6 +33,7 @@
 			:style="gameIframeStyle"
 		>
 		</iframe>
+		<error-tips v-if="showErrorTips" msg="您当前访问的游戏不存在哦~" />
 	</div>
 </template>
 
@@ -50,6 +51,7 @@ import AdDrag from '@/components/sdk/adDrag.vue';
 import PayPannel from '@/components/sdk/payPannel.vue';
 import AuthVerify from '@/components/sdk/authVerify.vue';
 import Retain from '@/components/retain.vue';
+import ErrorTips from '@/components/ErrorTips.vue';
 
 @Component({
 	components: {
@@ -60,7 +62,8 @@ import Retain from '@/components/retain.vue';
 		Center,
 		AuthVerify,
 		PayPannel,
-		Retain
+		Retain,
+		ErrorTips
 	},
 	computed: {
     ...mapState('sdk', {
@@ -69,6 +72,10 @@ import Retain from '@/components/retain.vue';
       },
       showLoginPannel(state: any) {
 				const { step, userId } = state.user;
+				const { url } = state.game;
+				if (!url) {
+					return false;
+				}
 				if (!!userId) {
 					this.$data.showLogin = false;
 				}
@@ -104,6 +111,7 @@ export default class Huiyao extends Mixins(sdkCommon, sdkMessager, sdkApi) {
       sdkOptions: {},
       showLogin: false,
 			showCenter: false,
+			showErrorTips: false,
 			dragStyle: {
 				top: '20%',
 				right: '-10px',

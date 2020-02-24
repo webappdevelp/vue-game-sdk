@@ -78,7 +78,7 @@ export default class Poly extends Mixins(pageCommonMix) {
 					params += `${p}=${this.datas[p]}&`
 				}
 			}
-			params = params.substring(0, params.length - 1);
+			params = params.length ? `${params}origin=${window.location.origin}` : params;
 			if (result) {
 				const { cp_url, json_param } = result;
 				document.title = (json_param && json_param.title) || '';
@@ -372,7 +372,8 @@ export default class Poly extends Mixins(pageCommonMix) {
 				aid: aid || '0',
 				start_origin
 			};
-			await loadJS('//xingyunddz.com/h5/lib.js');
+			const sdkUrl = hy_channel_id === '243' ? '//cdn.aliyun.gaoruifa.cn/js/huadou.sdk.js' : '//xingyunddz.com/h5/lib.js';
+			await loadJS(sdkUrl);
 			this.listenEventCallBack();
 			this.getInitData();
 		} catch (err) {

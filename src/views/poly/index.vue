@@ -78,6 +78,7 @@ import poly241 from './241/index.vue';
     poly239,
     poly240,
     poly241,
+    poly243: poly239,
   }
 })
 export default class Poly extends Vue {

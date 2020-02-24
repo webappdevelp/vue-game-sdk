@@ -7,19 +7,19 @@ import kefu from '@/kefu';
 @Component
 export default class SdkApi extends Vue {
   // 设备初始化
- public async deviceInit(origin: string = '') {
-   const { query } = this.$route;
-   const { sdkOptions } = this.$data;
-   const { channel } = sdkOptions;
-   origin = origin ? origin : [190, '190'].indexOf(channel) > -1 ? 'u9' : 'api';
-   const openid = Cookies.get('openid') || '';
-   const brand = !!openid ? '公众号' : !!query.mapp ? 'App' : 'web';
-   const devices = getStorage('device') || {};
-   let imei = devices.imei || query.imei || query.idfa || openid || '';
-   if (!imei && isAndroid && window.android) {
-     imei = await window.android.getImei();
-   }
-   const params: any = {
+  public async deviceInit(origin: string = '') {
+    const { query } = this.$route;
+    const { sdkOptions } = this.$data;
+    const { channel } = sdkOptions;
+    origin = origin ? origin : [190, '190'].indexOf(channel) > -1 ? 'u9' : 'api';
+    const openid = Cookies.get('openid') || '';
+    const brand = !!openid ? '公众号' : !!query.mapp ? 'App' : 'web';
+    const devices = getStorage('device') || {};
+    let imei = devices.imei || query.imei || query.idfa || openid || '';
+    if (!imei && isAndroid && window.android) {
+      imei = await window.android.getImei();
+    }
+    const params: any = {
       ...sdkOptions,
       brand,
       brand_desc: brand,
@@ -28,25 +28,25 @@ export default class SdkApi extends Vue {
       coordinate_lat: 0,
       tel_op: 0,
       http_origin: origin
-   };
-   try {
-     const result = await this.$store.dispatch('sdk/deviceInit', params);
-     if (result) {
-       this.$data.sdkOptions = {
-         ...sdkOptions,
-         device: result.device
-       };
-       if (imei !== devices.imei) {
+    };
+    try {
+      const result = await this.$store.dispatch('sdk/deviceInit', params);
+      if (result) {
+        this.$data.sdkOptions = {
+          ...sdkOptions,
+          device: result.device
+        };
+        if (imei !== devices.imei) {
           setStorage('device', result);
-       }
-       return true;
-     }
-   } catch (err) {
-     console.log('device init error ', err && err.message);
-   }
- }
+        }
+        return true;
+      }
+    } catch (err) {
+      console.log('device init error ', err && err.message);
+    }
+  }
 
- // 获取游戏数据
+  // 获取游戏数据
   public async getGame() {
     const { query } = this.$route;
     const { device_type } = query;
@@ -57,7 +57,12 @@ export default class SdkApi extends Vue {
     });
     if (result) {
       result.title && (document.title = result.title);
-      const url = result.cp_url.indexOf('?') > -1 ? `${result.cp_url}&origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : '' }` : `${result.cp_url}?origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : '' }`
+      const url = !!result.cp_url
+        ? result.cp_url.indexOf('?') > -1
+          ? `${result.cp_url}&origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : ''}`
+          : `${result.cp_url}?origin=${window.location.hostname}${device_type ? `&device_type=${device_type}` : ''}`
+        : '';
+      !url && (this.$data.showErrorTips = true);
       const params = result.json_param || {};
       this.$store.commit(`sdk/${UPDATEGAMEINFO}`, {
         id: result.gid,
@@ -66,6 +71,8 @@ export default class SdkApi extends Vue {
         ...params,
         kefu: kefu(sdkOptions.ctype, sdkOptions.app, result.title)
       });
+    } else {
+      this.$data.showErrorTips = true;
     }
   }
 }

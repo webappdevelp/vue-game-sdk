@@ -47,8 +47,8 @@ export default class PageCommon extends Mixins(CommonMix) {
       const result = await get(link, {
         datas: {
           ...sdkOptions,
-          imei: !!storageImei ? storageImei : sdkOptions.imei,
-          device_id: !!storageDevice ? storageDevice : sdkOptions.deviceId
+          imei: !!storageImei ? storageImei : (sdkOptions.imei || ''),
+          device_id: !!storageDevice ? storageDevice : (sdkOptions.deviceId || '')
         }
       });
       const { status, data } = result;
