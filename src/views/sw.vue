@@ -11,14 +11,17 @@ import isAndroid from '@/utils/ts/device/isAndroid';
 export default class SW extends Vue {
   private created() {
     const { query } = this.$route;
-    const { io, an } = query;
+    const { io, an, an_cn, io_cn } = query;
     delete query.io;
     delete query.an;
+    delete query.an_cn;
+    delete query.io_cn;
     this.$router.replace({
-      path: '/scenes',
+      path: '/play',
       query: {
         ...query,
-        gid: isAndroid ? an : io
+        gid: isAndroid ? an : io,
+        channel: isAndroid ? an_cn : io_cn
       }
     });
   }
