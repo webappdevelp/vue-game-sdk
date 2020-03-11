@@ -69,9 +69,9 @@ import Retain from '@/components/retain.vue';
       },
       showLoginPannel(state: any) {
 				const { step, userId } = state.user;
-				this.$data.showLogin = !!userId ? false : true;
 				switch(step) {
 					case 'logined':
+						this.$data.showLogin = false;
 						userId && this.sendMessage({
 							action: 'loginSuccess',
 							datas: this.$store.getters['sdk/sdkUserInfo']

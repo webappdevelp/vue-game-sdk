@@ -1,4 +1,5 @@
 import { Vue, Component } from 'vue-property-decorator';
+import MD5 from 'md5';
 import setShareInfo from '@/utils/ts/share';
 import { UPDATEMSG } from '@/store/types';
 import { isObject } from '@/utils/ts/types';
@@ -73,8 +74,14 @@ export default class SdkMessager extends Vue {
           break;
         case 'login':
           const userInfo = this.$store.getters['sdk/sdkUserInfo'];
-          if (!userInfo.userId) {
+          // 无历史账号则直接注册，否则弹窗登录
+          if (!!userInfo.channelUserName && !userInfo.userId) {
             this.$data.showLogin = true;
+          } else if (!userInfo.userId) {
+            this.$store.dispatch(`sdk/fastReg`, {
+              ...sdkOptions,
+              password: MD5(`uu${new Date().getTime()}game`)
+            });
           } else {
             this.sendMessage({
               action: 'loginSuccess',

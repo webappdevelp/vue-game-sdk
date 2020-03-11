@@ -1,6 +1,5 @@
 import { Component, Vue } from 'vue-property-decorator';
 import { Cookies, getStorage, setStorage } from '@/utils/ts/storage';
-import MD5 from 'md5';
 import { userStorageName, gamerStorageName } from '@/config';
 import { UPDATEUSERINFO, UPDATEGAMEINFO, UPDATEAD } from '@/store/types';
 import isWx from '@/utils/ts/device/isWx';
@@ -116,16 +115,19 @@ export default class SdkCommon extends Vue {
           step: 'logined'
         });
       } else {
+        this.$store.commit(`sdk/${UPDATEUSERINFO}`, {
+          username: userInfo.username,
+          password: userInfo.password
+        });
         setStorage(`${userStorageName}${app}-${start_origin}`, {
           username: userInfo.username,
           password: userInfo.password
         });
       }
-    } else if (isWx && !userInfo.username) {
-      // 如果是微信内，直接注册
-      this.$store.dispatch(`sdk/fastReg`, {
-        ...sdkOptions,
-        password: MD5(`uu${new Date().getTime()}game`)
+    }  else if (userInfo && userInfo.username) {
+      this.$store.commit(`sdk/${UPDATEUSERINFO}`, {
+        username: userInfo.username,
+        password: userInfo.password
       });
     }
   }
