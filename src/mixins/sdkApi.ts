@@ -64,7 +64,7 @@ export default class SdkApi extends Vue {
         name: result.title,
         url,
         ...params,
-        kefu: kefu(sdkOptions.ctype, sdkOptions.app, result.title)
+        kefu: kefu(sdkOptions.gtag, sdkOptions.app, result.title)
       });
     }
   }

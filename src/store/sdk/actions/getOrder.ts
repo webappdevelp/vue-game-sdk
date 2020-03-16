@@ -20,7 +20,7 @@ export default async (state: any, params: ApiGetOrderOptions) => {
     if (result.status === 0) {
       return result.data;
     }
-    throw result.message;
+    throw { message: result.message };
   } catch (err) {
     state.commit(`global/${UPDATELOAD}`, { show: false, content: '' }, { root: true });
     state.commit(`global/${UPDATEMSG}`, { show: true, content: err && err.message }, { root: true });

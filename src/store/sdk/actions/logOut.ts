@@ -19,7 +19,7 @@ export default async (
       state.commit(`global/${UPDATELOAD}`, { show: false, content: '' }, { root: true });
       return true;
     }
-    throw result.message;
+    throw { message: result.message };
   } catch (err) {
     state.commit(`global/${UPDATELOAD}`, { show: false, content: '' }, { root: true });
     state.commit(`global/${UPDATEMSG}`, { show: true, content: err && err.message }, { root: true });

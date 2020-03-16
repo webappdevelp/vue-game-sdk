@@ -13,5 +13,5 @@ export default async (state: any, params: ApiGetSysInfoOptions) => {
     const { user, app, service } = result.data;
     return user;
   }
-  throw result.message;
+  throw { message: result.message };
 };

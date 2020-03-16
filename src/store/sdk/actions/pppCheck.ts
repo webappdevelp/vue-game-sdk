@@ -10,5 +10,5 @@ export default async (state: any, params: ApiPPPCheckOptions) => {
     const { url } = result.data;
     return url.split('=')[1];
   }
-  throw result.message;
+  throw { message: result.message };
 };

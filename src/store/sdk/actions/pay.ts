@@ -47,7 +47,7 @@ export default async (state: any, params: ApiCheckPayOPtions & U9CreateOrderOpti
     state.commit(`global/${UPDATELOAD}`, { show: false, content: '' }, { root: true });
     // 如果是在PC版微信内则提示使用手机打开游戏并支付
     if (isWx && !isMobile) {
-      throw '暂不支持PC版微信支付, 您可使用手机登录游戏进行支付哦~';
+      throw { message: '暂不支持PC版微信支付, 您可使用手机登录游戏进行支付哦~' };
     } else if (isMiniProgam) {
       // 如果是小程序则跳转到小程序支付
       return window.wx.miniProgram.navigateTo({

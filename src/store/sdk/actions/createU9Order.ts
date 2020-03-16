@@ -10,5 +10,5 @@ export default async (state: any, params: U9CreateOrderOptions) => {
     const { OrderId } = result;
     return OrderId;
   }
-  throw result.message;
+  throw { message: result.message };
 };

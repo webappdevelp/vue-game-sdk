@@ -24,5 +24,5 @@ export default async (state: any, params: ApiGetOrderOptions) => {
       return 'fail';
     }
   }
-  throw result.message;
+  throw { message: result.message };
 };

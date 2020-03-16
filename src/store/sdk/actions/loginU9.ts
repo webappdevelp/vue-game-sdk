@@ -15,5 +15,5 @@ export default async (state: any, params: U9SignInOptions) => {
   if (result.Code === 0) {
     return result.UserId;
   }
-  throw result.message;
+  throw { message: result.message };
 };
