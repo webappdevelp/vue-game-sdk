@@ -102,7 +102,7 @@ export default class HyModal extends Vue {
       }, 8000);
       // 若是壳包或原生app跳转协议时，则采用iframe打开，通过壳包代理抓包打开原生支付app或浏览器
       const { mapp } = this.sdkOptions;
-      if (mapp || !/^(http|https|\/\/)/ig.test(pay_info_str)) {
+      if (mapp) {
         return (this.$data.payLink = pay_info_str);
       }
       return (window.location.href = pay_info_str);
