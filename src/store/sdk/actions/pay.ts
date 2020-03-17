@@ -39,7 +39,7 @@ export default async (state: any, params: ApiCheckPayOPtions & U9CreateOrderOpti
     }
     // 创建订单
     // const getOrderUrl = isIOSChannel ? 'pppCheck' : 'createU9Order';
-    const OrderId = isIOSChannel ? url.split('=')[1] : await state.dispatch('createU9Order', {
+    const OrderId = isIOSChannel ? params.productOrderId : await state.dispatch('createU9Order', {
       ...params,
       userId,
       deviceId: params.device
